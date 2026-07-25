@@ -2210,6 +2210,99 @@
             if (document.getElementById('page-support').classList.contains('active')) loadChatHistory();
             if (document.getElementById('page-admin').classList.contains('active')) loadAdminPanel();
         }, 15000);
+        // ============================================================
+// 🔥 ДОБАВЛЯЕМ КНОПКУ ОПЛАТЫ В КАРТОЧКУ СДЕЛКИ
+// ============================================================
+
+// Перехватываем функцию renderDeals, чтобы добавить кнопку оплаты
+const originalRenderDeals = window.renderDeals || function() {};
+
+window.renderDeals = function() {
+    // Вызываем оригинальную функцию
+    originalRenderDeals();
+    
+    // Ждём, пока отрисуются карточки
+    setTimeout(() => {
+        const container = document.getElementById('dealsList');
+        if (!container) return;
+        
+        const dealCards = container.querySelectorAll('.deal-card');
+        dealCards.forEach(card => {
+            // Проверяем, есть ли уже кнопка оплаты
+            if (card.querySelector('.pay-btn-inline')) return;
+            
+            // Ищем статус сделки
+            const statusEl = card.querySelector('.deal-status');
+            if (!statusEl) return;
+            
+            const statusText = statusEl.textContent.trim();
+            
+            // Если статус "Ожидает оплаты" — добавляем кнопку
+            if (statusText.includes('Ожидает') || statusText.includes('waiting')) {
+                // Ищем ID сделки
+                const linkEl = card.querySelector('a[href*="deal_"]');
+                let dealId = null;
+                
+                if (linkEl) {
+                    const href = linkEl.getAttribute('href');
+                    const match = href.match(/deal_([a-f0-9]+)/i);
+                    if (match) dealId = match[1];
+                }
+                
+                // Если не нашли по ссылке — ищем в тексте
+                if (!dealId) {
+                    const text = card.textContent;
+                    const match = text.match(/#([a-f0-9]{8})/i);
+                    if (match) dealId = match[1];
+                }
+                
+                if (!dealId) return;
+                
+                // Проверяем, является ли пользователь покупателем
+                const buyerEl = card.querySelector('.flex span:nth-child(2)');
+                let isBuyer = false;
+                if (buyerEl) {
+                    const buyerText = buyerEl.textContent.replace('@', '').trim();
+                    if (buyerText === user.username) isBuyer = true;
+                }
+                
+                // Если пользователь — покупатель, добавляем кнопку
+                if (isBuyer) {
+                    const payBtn = document.createElement('button');
+                    payBtn.className = 'btn btn-primary btn-sm pay-btn-inline';
+                    payBtn.style.marginTop = '8px';
+                    payBtn.style.width = '100%';
+                    payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Оплатить сделку';
+                    payBtn.onclick = function() {
+                        // Открываем модалку оплаты
+                        showModal(`
+                            <h3 style="margin-bottom:12px;">💳 Оплатить сделку</h3>
+                            <p style="color:var(--text-secondary);margin-bottom:12px;">Выберите способ оплаты:</p>
+                            <button class="btn btn-primary" onclick="payWithBalance('${dealId}')" style="margin-bottom:6px;">
+                                <i class="fas fa-wallet"></i> С баланса
+                            </button>
+                            <button class="btn btn-secondary" onclick="payWithRekvisits('${dealId}')" style="margin-bottom:6px;">
+                                <i class="fas fa-file-invoice"></i> По реквизитам
+                            </button>
+                            <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                        `);
+                    };
+                    card.appendChild(payBtn);
+                }
+            }
+        });
+    }, 300);
+};
+
+// Перехватываем loadDeals, чтобы перерисовать кнопки после загрузки
+const originalLoadDeals = window.loadDeals || function() {};
+
+window.loadDeals = async function() {
+    await originalLoadDeals();
+    // Кнопки добавятся через renderDeals
+};
+
+console.log('✅ Кнопки оплаты добавлены в список сделок!');
     </script>
 
 </body>
