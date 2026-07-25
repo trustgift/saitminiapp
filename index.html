@@ -221,32 +221,30 @@
         .deal-view-page .detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-color)}
         .deal-view-page .detail-row .label{color:var(--text-secondary)}
         .deal-view-page .detail-row .value{font-weight:600}
-        /* Стиль для блока оплаты */
-        .pay-buttons-block {
-            margin-top: 12px;
-            padding: 14px;
-            border-radius: 12px;
-            background: rgba(0,229,200,0.04);
-            border: 1px solid rgba(0,229,200,0.08);
-        }
-        .pay-buttons-block .pay-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #00e5c8;
-            margin-bottom: 8px;
-        }
-        .pay-buttons-block .btn {
+        .pay-btn-inline {
+            margin-top: 8px;
             width: 100%;
-            margin-bottom: 6px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #00e5c8, #00897b);
+            color: #07141a;
+            font-weight: 700;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
-        .pay-buttons-block .btn:last-of-type {
-            margin-bottom: 0;
+        .pay-btn-inline:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,229,200,0.2);
         }
-        .pay-buttons-block .pay-hint {
-            font-size: 11px;
-            color: #4f8a9a;
-            margin-top: 6px;
-            text-align: center;
+        .pay-btn-inline:active {
+            transform: scale(0.97);
         }
     </style>
 </head>
@@ -585,7 +583,6 @@
                     return { success: true, balance: balance[uid] };
                 }
                 case '/api/deals': {
-                    // ✅ ИСПРАВЛЕНО: показываем только сделки, где пользователь участник
                     return { success: true, deals: deals.filter(d => d.seller_id == uid || d.buyer_id == uid || d.buyer_username === user.username) };
                 }
                 case '/api/is_admin': {
@@ -895,7 +892,7 @@
         }
 
         // ============================================================
-        // 11. СДЕЛКИ
+        // 11. СДЕЛКИ + КНОПКА ОПЛАТЫ
         // ============================================================
         let dealsState = [];
 
@@ -1008,15 +1005,40 @@
                     html += '</div>';
                 }
 
+                // ===== КНОПКА ОПЛАТЫ ДЛЯ ПОКУПАТЕЛЯ =====
+                if (d.status === 'waiting_payment' && isBuyer) {
+                    html += `
+                        <button class="pay-btn-inline" onclick="showPaymentModal('${d.deal_id}')">
+                            <i class="fas fa-credit-card"></i> Оплатить сделку
+                        </button>
+                    `;
+                }
+
                 html += '</div>';
             }
             container.innerHTML = html;
         }
 
         // ============================================================
-        // 12. ОТКРЫТИЕ СДЕЛКИ ПО ССЫЛКЕ (ДЛЯ ПОКУПАТЕЛЯ)
+        // 12. МОДАЛКА ОПЛАТЫ
         // ============================================================
+        function showPaymentModal(dealId) {
+            showModal(`
+                <h3 style="margin-bottom:12px;">💳 Оплатить сделку</h3>
+                <p style="color:var(--text-secondary);margin-bottom:12px;">Выберите способ оплаты:</p>
+                <button class="btn btn-primary" onclick="payWithBalance('${dealId}')" style="margin-bottom:6px;">
+                    <i class="fas fa-wallet"></i> С баланса
+                </button>
+                <button class="btn btn-secondary" onclick="payWithRekvisits('${dealId}')" style="margin-bottom:6px;">
+                    <i class="fas fa-file-invoice"></i> По реквизитам
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            `);
+        }
 
+        // ============================================================
+        // 13. ОТКРЫТИЕ ПОЛЬЗОВАТЕЛЯ
+        // ============================================================
         function openTelegramUser(username) {
             if (tg) {
                 tg.openTelegramLink('https://t.me/' + username);
@@ -1039,196 +1061,8 @@
             }
         }
 
-        // Обработка ссылки с deal_id
-        function handleDealLink() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const startParam = urlParams.get('start');
-            
-            if (startParam && startParam.startsWith('deal_')) {
-                const dealId = startParam.replace('deal_', '');
-                console.log('🔗 Открыта сделка по ссылке:', dealId);
-                
-                setTimeout(() => {
-                    showDealPage(dealId);
-                }, 500);
-            }
-        }
-
         // ============================================================
-        // ⭐ ДОБАВЛЕНА ФУНКЦИЯ ОТОБРАЖЕНИЯ СТРАНИЦЫ СДЕЛКИ С КНОПКАМИ ОПЛАТЫ
-        // ============================================================
-        async function showDealPage(dealId) {
-            const d = await apiCall('/api/deals');
-            if (!d.success || !d.deals) {
-                showToast('❌ Не удалось загрузить сделку', 'error');
-                return;
-            }
-            
-            const deal = d.deals.find(d => d.deal_id === dealId);
-            if (!deal) {
-                showToast('❌ Сделка не найдена', 'error');
-                return;
-            }
-            
-            const isSeller = deal.seller_id == user.id;
-            const isBuyer = deal.buyer_username === user.username || deal.buyer_id == user.id;
-            
-            // Если пользователь продавец - показываем обычную страницу сделок
-            if (isSeller) {
-                showPage('deals');
-                showToast('📦 Вы продавец этой сделки', 'info');
-                return;
-            }
-            
-            // Проверяем, является ли пользователь покупателем
-            if (!isBuyer && deal.buyer_username) {
-                showToast('⚠️ Эта сделка предназначена для @' + deal.buyer_username + '.', 'error');
-            }
-            
-            // ПОКАЗЫВАЕМ СТРАНИЦУ СДЕЛКИ
-            const mainContent = document.getElementById('content');
-            if (!mainContent) return;
-            
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            
-            const oldPage = document.getElementById('page-deal-view');
-            if (oldPage) oldPage.remove();
-            
-            const dealPage = document.createElement('div');
-            dealPage.className = 'page active deal-view-page';
-            dealPage.id = 'page-deal-view';
-            
-            const isNft = deal.category === 'nft_gift';
-            let nftCardHtml = '';
-            if (isNft && deal.nft_link) {
-                const parsed = parseNftLink(deal.nft_link);
-                if (parsed) {
-                    nftCardHtml = renderNftCard(parsed);
-                }
-            }
-            
-            let statusText = getStatusText(deal.status);
-            let statusColor = 'waiting';
-            if (deal.status === 'paid') statusColor = 'paid';
-            else if (deal.status === 'awaiting_confirmation') statusColor = 'awaiting';
-            else if (deal.status === 'completed') statusColor = 'completed';
-            
-            // КНОПКИ ОПЛАТЫ — добавляем всегда, если сделка в статусе ожидания
-            let actionButtons = '';
-            
-            if (deal.status === 'waiting_payment') {
-                actionButtons = `
-                    <div class="pay-buttons-block">
-                        <div class="pay-title">💳 ОПЛАТА</div>
-                        <button class="btn btn-primary" onclick="payDeal('${deal.deal_id}')" style="margin-bottom:6px;">
-                            <i class="fas fa-wallet"></i> Оплатить с баланса
-                        </button>
-                        <button class="btn btn-secondary" onclick="payWithRekvisits('${deal.deal_id}')">
-                            <i class="fas fa-file-invoice"></i> Оплатить по реквизитам
-                        </button>
-                        <div class="pay-hint">⚠️ Средства замораживаются до подтверждения</div>
-                    </div>
-                `;
-            } else if (deal.status === 'paid' && isBuyer) {
-                actionButtons = `
-                    <div class="support-block mt-6" style="border-color:var(--success);">
-                        <span style="font-size:12px;color:var(--success);">✅ Сделка оплачена! Ожидайте передачи товара.</span>
-                    </div>
-                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
-                        <i class="fas fa-list"></i> К моим сделкам
-                    </button>
-                `;
-            } else if (deal.status === 'awaiting_confirmation' && isBuyer) {
-                actionButtons = `
-                    <div class="support-block mt-6" style="border-color:var(--aqua);">
-                        <span style="font-size:12px;color:var(--aqua);">📦 Товар передан! Подтвердите получение.</span>
-                    </div>
-                    <button class="btn btn-success mt-10" onclick="confirmReceipt('${deal.deal_id}')">
-                        <i class="fas fa-check"></i> Подтвердить получение
-                    </button>
-                    <button class="btn btn-secondary mt-6" onclick="showPage('deals')">
-                        <i class="fas fa-list"></i> К моим сделкам
-                    </button>
-                `;
-            } else if (deal.status === 'completed') {
-                actionButtons = `
-                    <div class="support-block mt-6" style="border-color:var(--success);">
-                        <span style="font-size:12px;color:var(--success);">🎉 Сделка завершена!</span>
-                    </div>
-                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
-                        <i class="fas fa-list"></i> К моим сделкам
-                    </button>
-                `;
-            } else {
-                actionButtons = `
-                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
-                        <i class="fas fa-list"></i> К моим сделкам
-                    </button>
-                `;
-            }
-            
-            // Если пользователь НЕ покупатель — скрываем кнопки оплаты
-            let payBlock = actionButtons;
-            if (deal.status === 'waiting_payment' && !isBuyer && deal.buyer_username) {
-                payBlock = `
-                    <div class="support-block mt-6" style="border-color:var(--warning);">
-                        <span style="font-size:12px;color:var(--warning);">⚠️ Эта сделка предназначена для @${escapeHtml(deal.buyer_username)}.</span>
-                    </div>
-                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
-                        <i class="fas fa-list"></i> К моим сделкам
-                    </button>
-                `;
-            }
-            
-            dealPage.innerHTML = `
-                <div class="card glass" style="margin-top:0;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-                        <div style="font-size:20px;font-weight:900;">📦 Сделка #${escapeHtml(deal.deal_id)}</div>
-                        <span class="deal-status ${statusColor}" style="font-size:14px;padding:4px 18px;">${statusText}</span>
-                    </div>
-                    
-                    <div style="display:grid;gap:4px;margin-top:12px;">
-                        <div class="detail-row">
-                            <span class="label">🎁 Товар</span>
-                            <span class="value">${escapeHtml(deal.product)}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">💰 Сумма</span>
-                            <span class="value" style="color:var(--aqua);">${deal.amount} ${deal.currency}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">👤 Продавец</span>
-                            <span class="value">@${escapeHtml(deal.seller_username || '?')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">👤 Покупатель</span>
-                            <span class="value">@${escapeHtml(deal.buyer_username || '?')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">🏷️ Категория</span>
-                            <span class="value">${escapeHtml(deal.category || 'Не указана')}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">📅 Создана</span>
-                            <span class="value">${deal.created_at ? new Date(deal.created_at).toLocaleDateString('ru-RU') : 'недавно'}</span>
-                        </div>
-                    </div>
-                    
-                    ${nftCardHtml}
-                    
-                    ${payBlock}
-                </div>
-                <button class="btn btn-secondary mt-10" onclick="showPage('main')">
-                    <i class="fas fa-arrow-left"></i> На главную
-                </button>
-            `;
-            
-            mainContent.appendChild(dealPage);
-            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-        }
-
-        // ============================================================
-        // 13. ПЕРЕДАЧА NFT С ПОДТВЕРЖДЕНИЕМ
+        // 14. ПЕРЕДАЧА NFT С ПОДТВЕРЖДЕНИЕМ
         // ============================================================
 
         function showTransferConfirm(dealId) {
@@ -1260,7 +1094,7 @@
         }
 
         // ============================================================
-        // 14. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА) + ОТПРАВКА АДМИНУ + ЗАМОРОЗКА
+        // 15. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА) + ОТПРАВКА АДМИНУ + ЗАМОРОЗКА
         // ============================================================
 
         function isWithdrawFrozen() {
@@ -1515,7 +1349,7 @@
         }
 
         // ============================================================
-        // 15. ОПЛАТА И ПЕРЕДАЧА (С КНОПКАМИ)
+        // 16. ОПЛАТА И ПЕРЕДАЧА
         // ============================================================
         function copyDealLink(id) {
             const l = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + id;
@@ -1523,18 +1357,8 @@
             showToast('✅ Ссылка скопирована!', 'success');
         }
 
-        // ===== ОПЛАТА С БАЛАНСА =====
         async function payDeal(id) {
-            showModal(
-                '<h3 style="margin-bottom:12px;">💳 Оплатить</h3>' +
-                '<div style="display:grid;gap:8px;">' +
-                '<button class="btn btn-primary" onclick="payWithBalance(\'' + id +
-                '\')"><i class="fas fa-wallet"></i> С баланса</button>' +
-                '<button class="btn btn-secondary" onclick="payWithRekvisits(\'' + id +
-                '\')"><i class="fas fa-file-invoice"></i> По реквизитам</button>' +
-                '</div>' +
-                '<button class="btn btn-secondary mt-10" onclick="closeModal()">Отмена</button>'
-            );
+            showPaymentModal(id);
         }
 
         async function payWithBalance(id) {
@@ -1594,7 +1418,7 @@
         }
 
         // ============================================================
-        // 16. СОЗДАНИЕ СДЕЛКИ
+        // 17. СОЗДАНИЕ СДЕЛКИ
         // ============================================================
         const categorySelect = document.getElementById('categorySelect');
         if (categorySelect) {
@@ -1715,7 +1539,7 @@
         });
 
         // ============================================================
-        // 17. ЧАТ С АВТООТВЕТЧИКОМ
+        // 18. ЧАТ С АВТООТВЕТЧИКОМ
         // ============================================================
         let supportReplied = false;
         let chatSessionId = 'default';
@@ -1823,7 +1647,7 @@
         }
 
         // ============================================================
-        // 18. АДМИН-ПАНЕЛЬ
+        // 19. АДМИН-ПАНЕЛЬ
         // ============================================================
         async function loadAdminPanel() {
             const container = document.getElementById('adminContent');
@@ -2078,7 +1902,7 @@
         }
 
         // ============================================================
-        // 19. ПРОФИЛЬ
+        // 20. ПРОФИЛЬ
         // ============================================================
         async function loadProfile() {
             document.getElementById('profileName').textContent = user.firstName;
@@ -2093,7 +1917,7 @@
         }
 
         // ============================================================
-        // 20. ВИЗАРД
+        // 21. ВИЗАРД
         // ============================================================
         let wizardStep = 0;
 
@@ -2168,7 +1992,7 @@
         };
 
         // ============================================================
-        // 21. MODAL / TOAST
+        // 22. MODAL / TOAST
         // ============================================================
         window.showModal = function(html) {
             document.getElementById('modalBody').innerHTML = html;
@@ -2184,7 +2008,7 @@
         });
 
         // ============================================================
-        // 22. ЗАПУСК
+        // 23. ЗАПУСК
         // ============================================================
         console.log('🌊 Trust Gifts Mini App загружена');
 
@@ -2200,8 +2024,6 @@
         loadDeals();
         loadProfile();
 
-        handleDealLink();
-
         setInterval(() => {
             if (document.getElementById('page-main').classList.contains('active')) loadMainData();
             if (document.getElementById('page-balance').classList.contains('active')) { loadBalance(); }
@@ -2210,99 +2032,6 @@
             if (document.getElementById('page-support').classList.contains('active')) loadChatHistory();
             if (document.getElementById('page-admin').classList.contains('active')) loadAdminPanel();
         }, 15000);
-        // ============================================================
-// 🔥 ДОБАВЛЯЕМ КНОПКУ ОПЛАТЫ В КАРТОЧКУ СДЕЛКИ
-// ============================================================
-
-// Перехватываем функцию renderDeals, чтобы добавить кнопку оплаты
-const originalRenderDeals = window.renderDeals || function() {};
-
-window.renderDeals = function() {
-    // Вызываем оригинальную функцию
-    originalRenderDeals();
-    
-    // Ждём, пока отрисуются карточки
-    setTimeout(() => {
-        const container = document.getElementById('dealsList');
-        if (!container) return;
-        
-        const dealCards = container.querySelectorAll('.deal-card');
-        dealCards.forEach(card => {
-            // Проверяем, есть ли уже кнопка оплаты
-            if (card.querySelector('.pay-btn-inline')) return;
-            
-            // Ищем статус сделки
-            const statusEl = card.querySelector('.deal-status');
-            if (!statusEl) return;
-            
-            const statusText = statusEl.textContent.trim();
-            
-            // Если статус "Ожидает оплаты" — добавляем кнопку
-            if (statusText.includes('Ожидает') || statusText.includes('waiting')) {
-                // Ищем ID сделки
-                const linkEl = card.querySelector('a[href*="deal_"]');
-                let dealId = null;
-                
-                if (linkEl) {
-                    const href = linkEl.getAttribute('href');
-                    const match = href.match(/deal_([a-f0-9]+)/i);
-                    if (match) dealId = match[1];
-                }
-                
-                // Если не нашли по ссылке — ищем в тексте
-                if (!dealId) {
-                    const text = card.textContent;
-                    const match = text.match(/#([a-f0-9]{8})/i);
-                    if (match) dealId = match[1];
-                }
-                
-                if (!dealId) return;
-                
-                // Проверяем, является ли пользователь покупателем
-                const buyerEl = card.querySelector('.flex span:nth-child(2)');
-                let isBuyer = false;
-                if (buyerEl) {
-                    const buyerText = buyerEl.textContent.replace('@', '').trim();
-                    if (buyerText === user.username) isBuyer = true;
-                }
-                
-                // Если пользователь — покупатель, добавляем кнопку
-                if (isBuyer) {
-                    const payBtn = document.createElement('button');
-                    payBtn.className = 'btn btn-primary btn-sm pay-btn-inline';
-                    payBtn.style.marginTop = '8px';
-                    payBtn.style.width = '100%';
-                    payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Оплатить сделку';
-                    payBtn.onclick = function() {
-                        // Открываем модалку оплаты
-                        showModal(`
-                            <h3 style="margin-bottom:12px;">💳 Оплатить сделку</h3>
-                            <p style="color:var(--text-secondary);margin-bottom:12px;">Выберите способ оплаты:</p>
-                            <button class="btn btn-primary" onclick="payWithBalance('${dealId}')" style="margin-bottom:6px;">
-                                <i class="fas fa-wallet"></i> С баланса
-                            </button>
-                            <button class="btn btn-secondary" onclick="payWithRekvisits('${dealId}')" style="margin-bottom:6px;">
-                                <i class="fas fa-file-invoice"></i> По реквизитам
-                            </button>
-                            <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
-                        `);
-                    };
-                    card.appendChild(payBtn);
-                }
-            }
-        });
-    }, 300);
-};
-
-// Перехватываем loadDeals, чтобы перерисовать кнопки после загрузки
-const originalLoadDeals = window.loadDeals || function() {};
-
-window.loadDeals = async function() {
-    await originalLoadDeals();
-    // Кнопки добавятся через renderDeals
-};
-
-console.log('✅ Кнопки оплаты добавлены в список сделок!');
     </script>
 
 </body>
