@@ -221,6 +221,33 @@
         .deal-view-page .detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-color)}
         .deal-view-page .detail-row .label{color:var(--text-secondary)}
         .deal-view-page .detail-row .value{font-weight:600}
+        /* Стиль для блока оплаты */
+        .pay-buttons-block {
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(0,229,200,0.04);
+            border: 1px solid rgba(0,229,200,0.08);
+        }
+        .pay-buttons-block .pay-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #00e5c8;
+            margin-bottom: 8px;
+        }
+        .pay-buttons-block .btn {
+            width: 100%;
+            margin-bottom: 6px;
+        }
+        .pay-buttons-block .btn:last-of-type {
+            margin-bottom: 0;
+        }
+        .pay-buttons-block .pay-hint {
+            font-size: 11px;
+            color: #4f8a9a;
+            margin-top: 6px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -1027,7 +1054,9 @@
             }
         }
 
-        // Показать страницу сделки для покупателя
+        // ============================================================
+        // ⭐ ДОБАВЛЕНА ФУНКЦИЯ ОТОБРАЖЕНИЯ СТРАНИЦЫ СДЕЛКИ С КНОПКАМИ ОПЛАТЫ
+        // ============================================================
         async function showDealPage(dealId) {
             const d = await apiCall('/api/deals');
             if (!d.success || !d.deals) {
@@ -1053,9 +1082,7 @@
             
             // Проверяем, является ли пользователь покупателем
             if (!isBuyer && deal.buyer_username) {
-                // Если пользователь НЕ покупатель, но зашёл по ссылке
-                showToast('⚠️ Эта сделка предназначена для @' + deal.buyer_username + '. Перелогиньтесь или откройте в приложении Telegram.', 'error');
-                // Показываем страницу только для просмотра без кнопки оплаты
+                showToast('⚠️ Эта сделка предназначена для @' + deal.buyer_username + '.', 'error');
             }
             
             // ПОКАЗЫВАЕМ СТРАНИЦУ СДЕЛКИ
@@ -1086,28 +1113,21 @@
             else if (deal.status === 'awaiting_confirmation') statusColor = 'awaiting';
             else if (deal.status === 'completed') statusColor = 'completed';
             
+            // КНОПКИ ОПЛАТЫ — добавляем всегда, если сделка в статусе ожидания
             let actionButtons = '';
             
-            // КНОПКА ОПЛАТЫ ПОКАЗЫВАЕТСЯ ТОЛЬКО ЕСЛИ:
-            // 1. Пользователь является покупателем (isBuyer = true)
-            // 2. Статус сделки 'waiting_payment'
-            if (deal.status === 'waiting_payment' && isBuyer) {
+            if (deal.status === 'waiting_payment') {
                 actionButtons = `
-                    <button class="btn btn-primary mt-10" onclick="payDeal('${deal.deal_id}')">
-                        <i class="fas fa-credit-card"></i> Оплатить сделку
-                    </button>
-                    <div class="support-block mt-6" style="border-color:var(--warning);">
-                        <span style="font-size:12px;color:var(--sunny);">⚠️ Оплата проходит через эскроу. Средства будут заморожены до подтверждения получения товара.</span>
+                    <div class="pay-buttons-block">
+                        <div class="pay-title">💳 ОПЛАТА</div>
+                        <button class="btn btn-primary" onclick="payDeal('${deal.deal_id}')" style="margin-bottom:6px;">
+                            <i class="fas fa-wallet"></i> Оплатить с баланса
+                        </button>
+                        <button class="btn btn-secondary" onclick="payWithRekvisits('${deal.deal_id}')">
+                            <i class="fas fa-file-invoice"></i> Оплатить по реквизитам
+                        </button>
+                        <div class="pay-hint">⚠️ Средства замораживаются до подтверждения</div>
                     </div>
-                `;
-            } else if (deal.status === 'waiting_payment' && !isBuyer && deal.buyer_username) {
-                actionButtons = `
-                    <div class="support-block mt-6" style="border-color:var(--warning);">
-                        <span style="font-size:12px;color:var(--warning);">⚠️ Эта сделка предназначена для @${escapeHtml(deal.buyer_username)}.</span>
-                    </div>
-                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
-                        <i class="fas fa-list"></i> К моим сделкам
-                    </button>
                 `;
             } else if (deal.status === 'paid' && isBuyer) {
                 actionButtons = `
@@ -1141,6 +1161,19 @@
                 `;
             } else {
                 actionButtons = `
+                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
+                        <i class="fas fa-list"></i> К моим сделкам
+                    </button>
+                `;
+            }
+            
+            // Если пользователь НЕ покупатель — скрываем кнопки оплаты
+            let payBlock = actionButtons;
+            if (deal.status === 'waiting_payment' && !isBuyer && deal.buyer_username) {
+                payBlock = `
+                    <div class="support-block mt-6" style="border-color:var(--warning);">
+                        <span style="font-size:12px;color:var(--warning);">⚠️ Эта сделка предназначена для @${escapeHtml(deal.buyer_username)}.</span>
+                    </div>
                     <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
                         <i class="fas fa-list"></i> К моим сделкам
                     </button>
@@ -1183,7 +1216,7 @@
                     
                     ${nftCardHtml}
                     
-                    ${actionButtons}
+                    ${payBlock}
                 </div>
                 <button class="btn btn-secondary mt-10" onclick="showPage('main')">
                     <i class="fas fa-arrow-left"></i> На главную
@@ -1482,7 +1515,7 @@
         }
 
         // ============================================================
-        // 15. ОПЛАТА И ПЕРЕДАЧА
+        // 15. ОПЛАТА И ПЕРЕДАЧА (С КНОПКАМИ)
         // ============================================================
         function copyDealLink(id) {
             const l = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + id;
@@ -1490,6 +1523,7 @@
             showToast('✅ Ссылка скопирована!', 'success');
         }
 
+        // ===== ОПЛАТА С БАЛАНСА =====
         async function payDeal(id) {
             showModal(
                 '<h3 style="margin-bottom:12px;">💳 Оплатить</h3>' +
