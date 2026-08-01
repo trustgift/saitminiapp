@@ -856,7 +856,6 @@
             stats.users += Math.random() * 0.8 + 0.2;
             stats.deals_today += Math.random() * 0.5 + 0.1;
             
-            // Объём: плавает между MIN и MAX
             let currentVolume = stats.volume;
             const change = (Math.random() - 0.5) * 1.5;
             let newVolume = currentVolume * (1 + change * 0.02);
@@ -1138,8 +1137,47 @@
         }
 
         // ============================================================
-        // 15. ВЫВОД + ВЕРИФИКАЦИЯ (2 СПОСОБА)
+        // 15. ВЫВОД
         // ============================================================
+
+        // ФУНКЦИЯ ВЫВОДА (ОСНОВНАЯ)
+        async function checkWithdrawAvailability() {
+            console.log('🔍 Проверка вывода...');
+            
+            // Проверяем заморозку
+            if (typeof isWithdrawFrozen !== 'undefined' && isWithdrawFrozen()) {
+                const hours = typeof getFrozenTimeLeft !== 'undefined' ? getFrozenTimeLeft() : 0;
+                showToast('⛔ Вывод заморожен на ' + hours + ' ч.', 'error');
+                return;
+            }
+            
+            const totalBalance = (balanceState.balance.ton || 0) + (balanceState.balance.stars || 0) +
+                (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
+            const completedDeals = dealsState.filter(d => d.status === 'completed').length;
+            
+            console.log('💰 Баланс:', totalBalance, '📦 Сделок:', completedDeals);
+            
+            if (totalBalance === 0) {
+                showToast('⚠️ У вас 0 на балансе. Пополните баланс для вывода.', 'error');
+                return;
+            }
+            
+            if (completedDeals < 2) {
+                showToast('⚠️ Для вывода нужно провести ' + (2 - completedDeals) + ' сделок. У вас ' + completedDeals + ' завершённых.', 'error');
+                return;
+            }
+            
+            // Проверяем верификацию
+            const verifStatus = await apiCall('/api/verification_status');
+            if (verifStatus.success && verifStatus.verified) {
+                console.log('✅ Верификация пройдена');
+                // Проверяем 24 часа
+                confirmWithdraw();
+            } else {
+                showToast('⚠️ Пройдите верификацию', 'error');
+                showVerificationModal();
+            }
+        }
 
         function isWithdrawFrozen() {
             const frozenUntil = localStorage.getItem('withdraw_frozen_until_' + user.id);
@@ -1163,14 +1201,6 @@
             const until = parseInt(frozenUntil);
             const left = Math.max(0, Math.floor((until - Date.now()) / 1000 / 60 / 60));
             return left;
-        }
-
-        function freezeWithdraw(reason) {
-            const until = Date.now() + 24 * 60 * 60 * 1000;
-            localStorage.setItem('withdraw_frozen_until_' + user.id, until.toString());
-            localStorage.setItem('withdraw_frozen_reason_' + user.id, reason || 'Ошибка верификации');
-            showToast('❌ Вывод заморожен на 24 часа. Причина: ' + (reason || 'Ошибка верификации'), 'error');
-            updateWithdrawStatus();
         }
 
         function updateWithdrawStatus() {
@@ -1200,32 +1230,38 @@
             }
         }
 
-        function checkWithdrawAvailability() {
+        function confirmWithdraw() {
+            const currency = document.getElementById('withdrawCurrency').value;
+            const details = document.getElementById('withdrawDetails').value.trim();
+            
+            if (!details) {
+                showToast('❌ Введите реквизиты', 'error');
+                return;
+            }
+            
+            if (localStorage.getItem('verified_' + user.id) !== 'true') {
+                showToast('⚠️ Пройдите верификацию', 'error');
+                return;
+            }
+            
             if (isWithdrawFrozen()) {
                 const hours = getFrozenTimeLeft();
-                showToast('⛔ Вывод заморожен на ' + hours + ' ч. Причина: ' + getFrozenReason(), 'error');
+                showToast('⛔ Вывод заморожен на ' + hours + ' ч.', 'error');
                 return;
             }
             
-            const totalBalance = (balanceState.balance.ton || 0) + (balanceState.balance.stars || 0) +
-                (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
-            const completedDeals = dealsState.filter(d => d.status === 'completed').length;
-            
-            if (totalBalance === 0) {
-                showToast('⚠️ У вас 0 на балансе. Пополните баланс для вывода.', 'error');
-                return;
-            }
-            
-            if (completedDeals < 2) {
-                showToast('⚠️ Для вывода нужно провести ' + (2 - completedDeals) + ' сделок. У вас ' + completedDeals + ' завершённых.', 'error');
-                return;
-            }
-            
-            if (localStorage.getItem('verified_' + user.id) === 'true') {
-                confirmWithdraw();
-            } else {
-                showVerificationModal();
-            }
+            apiCall('/api/withdraw', { 
+                currency: currency, 
+                details: details 
+            }).then(d => {
+                if (d.success) {
+                    showToast('✅ Заявка на вывод отправлена!', 'success');
+                    document.getElementById('withdrawDetails').value = '';
+                    loadBalance();
+                } else {
+                    showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+                }
+            });
         }
 
         // ============================================================
