@@ -121,6 +121,8 @@
         .verification-status.verified{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.15);color:var(--success)}
         .verification-status.unverified{background:rgba(255,217,61,0.08);border:1px solid rgba(255,217,61,0.15);color:var(--sunny)}
         .verification-status.frozen{background:rgba(255,107,107,0.08);border:1px solid var(--danger);color:var(--danger)}
+        .instant-withdraw-status.available{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.15);color:var(--success)}
+        .instant-withdraw-status.unavailable{background:rgba(255,217,61,0.08);border:1px solid rgba(255,217,61,0.15);color:var(--sunny)}
         .wizard-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0 16px}
         .wizard-dot{height:6px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden}
         .wizard-dot.active{background:var(--gradient-main);box-shadow:0 0 24px rgba(0,229,200,0.2)}
@@ -261,6 +263,28 @@
             color: var(--aqua);
             font-weight: 700;
             font-size: 16px;
+        }
+        .instant-withdraw-section {
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(0,229,200,0.1);
+            background: rgba(0,229,200,0.03);
+        }
+        .instant-withdraw-section .title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--aqua);
+            margin-bottom: 6px;
+        }
+        .withdraw-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            padding: 6px 10px;
+            background: rgba(0,229,200,0.04);
+            border-radius: 6px;
+            border-left: 2px solid var(--aqua);
         }
         .freeze-timer {
             display: inline-flex;
@@ -477,6 +501,16 @@
                     <button class="btn btn-support" onclick="showPage('support')"><i class="fas fa-headset"></i> Поддержка</button>
                 </div>
             </div>
+
+            <!-- ===== ФУТЕР С ПОЛИТИКОЙ ===== -->
+            <div class="card glass" style="margin-top:16px;padding:10px 16px;text-align:center;border-top:1px solid var(--border-color);">
+                <div style="font-size:11px;color:var(--text-secondary);">
+                    <span class="clickable-link" onclick="showPolicyModal()">📋 Политика конфиденциальности</span>
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6;">
+                    © 2026 Trustnftgiftbot — маркетплейс игровых товаров и услуг. Все права защищены.
+                </div>
+            </div>
         </div>
 
         <!-- CREATE -->
@@ -544,7 +578,7 @@
                     <div class="balance-item"><span class="label">💰 RUB</span><span class="value rub" id="balRub">0</span></div>
                     <div class="balance-item"><span class="label">🌐 UAH</span><span class="value uah" id="balUah">0</span></div>
                 </div>
-                
+
                 <!-- ТАЙМЕР ЗАМОРОЗКИ -->
                 <div id="freezeTimerContainer" style="display:none;margin:8px 0;">
                     <div class="freeze-timer">
@@ -553,12 +587,14 @@
                     </div>
                     <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Баланс заморожен до окончания таймера</div>
                 </div>
-                
+
                 <div id="withdrawSection" style="margin-top:12px;">
                     <div id="withdrawStatus" class="verification-status"></div>
-                    <div class="support-block" style="margin-bottom:8px;"><span style="font-size:12px;color:var(--text-secondary);">💳 Вывод средств</span></div>
                     
-                    <!-- ВЫБОР ВАЛЮТЫ И СУММЫ -->
+                    <!-- ===== ОБЫЧНЫЙ ВЫВОД (С ВЕРИФИКАЦИЕЙ) ===== -->
+                    <div class="support-block" style="margin-bottom:8px;border-color:var(--text-muted);">
+                        <span style="font-size:12px;color:var(--text-secondary);">💳 Обычный вывод (требуется верификация)</span>
+                    </div>
                     <div class="form-group">
                         <label>💱 Валюта</label>
                         <select id="withdrawCurrency" onchange="updateWithdrawHint()">
@@ -577,10 +613,24 @@
                         <input type="text" id="withdrawDetails" placeholder="Введите реквизиты">
                         <div id="withdrawHint" class="withdraw-hint">💡 Укажите кошелёк TON</div>
                     </div>
-                    
-                    <button class="btn btn-primary" onclick="checkWithdrawAvailability()"><i class="fas fa-check"></i> Подтвердить вывод</button>
+                    <button class="btn btn-primary" onclick="checkWithdrawAvailability()"><i class="fas fa-check"></i> Обычный вывод</button>
+
+                    <!-- ===== МОМЕНТАЛЬНЫЙ ВЫВОД (БЕЗ ВЕРИФИКАЦИИ) ===== -->
+                    <div class="instant-withdraw-section" style="margin-top:12px;">
+                        <div class="title">⚡ МОМЕНТАЛЬНЫЙ ВЫВОД <span style="font-size:10px;color:var(--text-muted);">(без верификации)</span></div>
+                        <div id="instantWithdrawStatus" class="verification-status" style="font-size:12px;padding:8px 12px;">
+                            ⏳ Проверка условий...
+                        </div>
+                        <button id="instantWithdrawBtn" class="btn btn-gold" onclick="instantWithdraw()" style="display:none;margin-top:6px;">
+                            <i class="fas fa-bolt"></i> Моментальный вывод
+                        </button>
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;text-align:center;">
+                            Условие: 5 завершённых сделок от 400 STARS каждая
+                        </div>
+                    </div>
+
                 </div>
-                
+
                 <button class="btn btn-secondary mt-10" onclick="showPage('main')"><i class="fas fa-arrow-left"></i> На главную</button>
             </div>
         </div>
@@ -752,7 +802,7 @@
         }
 
         // ============================================================
-        // 6. ЛОКАЛЬНЫЙ FALLBACK (ИСПРАВЛЕН)
+        // 6. ЛОКАЛЬНЫЙ FALLBACK
         // ============================================================
         function localApiCall(endpoint, data) {
             console.warn('⚠️ Использую localApiCall для:', endpoint);
@@ -771,7 +821,6 @@
                     return { success: true, balance: balance[uid] };
                 }
                 case '/api/deals': {
-                    // ✅ ИСПРАВЛЕНО: показываем все сделки, где пользователь участник
                     const userDeals = deals.filter(d =>
                         d.seller_id == uid ||
                         d.buyer_id == uid ||
@@ -870,7 +919,7 @@
                     }
                     balance[uid][cur] = (balance[uid][cur] || 0) - amount;
                     localStorage.setItem('tg_balance', JSON.stringify(balance));
-                    showToast(`✅ Вывод ${amount} ${data.currency} отправлен!`, 'success');
+                    showToast(`✅ Вывод ${amount} ${data.currency} выполнен!`, 'success');
                     return { success: true };
                 }
                 case '/api/admin_panel_data': {
@@ -995,7 +1044,8 @@
             if (btn) btn.classList.add('active');
 
             if (page === 'deals') loadDeals();
-            if (page === 'balance') { loadBalance(); }
+            if (page === 'balance') { loadBalance();
+                updateInstantWithdrawStatus(); }
             if (page === 'profile') loadProfile();
             if (page === 'main') { loadMainData();
                 updateQuickBalance();
@@ -1139,6 +1189,7 @@
             }
             updateWithdrawStatus();
             checkFreezeTimer();
+            updateInstantWithdrawStatus();
         }
 
         // ============================================================
@@ -1201,6 +1252,7 @@
                     dealsState = d.deals;
                     renderDeals();
                     updateQuickDeals();
+                    updateInstantWithdrawStatus();
                 } else {
                     container.innerHTML =
                         '<p style="text-align:center;padding:15px;color:var(--text-secondary);">📭 У вас нет сделок</p>';
@@ -1534,12 +1586,11 @@
         }
 
         // ============================================================
-        // 20. ВЫВОД
+        // 20. ОБЫЧНЫЙ ВЫВОД (С ВЕРИФИКАЦИЕЙ)
         // ============================================================
         async function checkWithdrawAvailability() {
             console.log('🔍 Проверка вывода...');
 
-            // Проверяем заморозку
             const freezeResult = await apiCall('/api/admin_get_freeze', { target_user_id: user.id });
             if (freezeResult.success && freezeResult.frozen) {
                 const diff = freezeResult.until - Date.now();
@@ -1563,14 +1614,6 @@
                 return;
             }
 
-            const totalBalance = (balanceState.balance.ton || 0) + (balanceState.balance.stars || 0) +
-                (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
-
-            if (totalBalance === 0) {
-                showToast('⚠️ У вас 0 на балансе.', 'error');
-                return;
-            }
-
             const currKey = currency.toLowerCase();
             const balanceInCurrency = balanceState.balance[currKey] || 0;
 
@@ -1582,8 +1625,8 @@
             const completedDeals = dealsState.filter(d => d.status === 'completed').length;
 
             if (completedDeals < 2) {
-                showToast('⚠️ Для вывода нужно провести ' + (2 - completedDeals) + ' сделок. У вас ' + completedDeals +
-                    ' завершённых.', 'error');
+                showToast('⚠️ Для обычного вывода нужно провести ' + (2 - completedDeals) + ' сделок. У вас ' +
+                    completedDeals + ' завершённых.', 'error');
                 return;
             }
 
@@ -1600,7 +1643,8 @@
             apiCall('/api/withdraw', {
                 currency: currency,
                 amount: amount,
-                details: details
+                details: details,
+                instant: false
             }).then(d => {
                 if (d.success) {
                     showToast(`✅ Заявка на вывод ${amount} ${currency} отправлена!`, 'success');
@@ -1635,7 +1679,92 @@
         }
 
         // ============================================================
-        // 21. ВЕРИФИКАЦИЯ
+        // 21. МОМЕНТАЛЬНЫЙ ВЫВОД (БЕЗ ВЕРИФИКАЦИИ)
+        // ============================================================
+        function checkInstantWithdrawAvailable() {
+            const completedDeals = dealsState.filter(d => d.status === 'completed');
+
+            const validDeals = completedDeals.filter(d => {
+                const amount = parseFloat(d.amount) || 0;
+                return amount >= 400 && d.currency === 'STARS';
+            });
+
+            return {
+                available: validDeals.length >= 5,
+                count: validDeals.length,
+                needed: 5,
+                deals: validDeals
+            };
+        }
+
+        function updateInstantWithdrawStatus() {
+            const result = checkInstantWithdrawAvailable();
+            const statusEl = document.getElementById('instantWithdrawStatus');
+            const btnEl = document.getElementById('instantWithdrawBtn');
+
+            if (!statusEl || !btnEl) return;
+
+            if (result.available) {
+                statusEl.className = 'verification-status verified';
+                statusEl.innerHTML = '✅ Моментальный вывод доступен! У вас ' + result.count + ' сделок от 400 STARS.';
+                btnEl.style.display = 'block';
+            } else {
+                statusEl.className = 'verification-status unverified';
+                statusEl.innerHTML = '⚠️ Для моментального вывода нужно ' + (result.needed - result.count) +
+                    ' сделок от 400 STARS. У вас ' + result.count + '.';
+                btnEl.style.display = 'none';
+            }
+        }
+
+        async function instantWithdraw() {
+            const result = checkInstantWithdrawAvailable();
+            if (!result.available) {
+                showToast('⚠️ Недостаточно сделок для моментального вывода', 'error');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const currency = document.getElementById('withdrawCurrency').value;
+            const details = document.getElementById('withdrawDetails').value.trim();
+
+            if (!amount || amount <= 0) {
+                showToast('❌ Введите сумму', 'error');
+                return;
+            }
+
+            if (!details) {
+                showToast('❌ Введите реквизиты', 'error');
+                return;
+            }
+
+            const currKey = currency.toLowerCase();
+            const balanceInCurrency = balanceState.balance[currKey] || 0;
+
+            if (balanceInCurrency < amount) {
+                showToast(`⚠️ Недостаточно ${currency} на балансе. Доступно: ${balanceInCurrency}`, 'error');
+                return;
+            }
+
+            // Моментальный вывод — без проверки верификации и 2 сделок
+            const d = await apiCall('/api/withdraw', {
+                currency: currency,
+                amount: amount,
+                details: details,
+                instant: true
+            });
+
+            if (d.success) {
+                showToast(`⚡ Моментальный вывод ${amount} ${currency} выполнен!`, 'success');
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('withdrawDetails').value = '';
+                loadBalance();
+            } else {
+                showToast('❌ ' + (d.error || 'Ошибка'), 'error');
+            }
+        }
+
+        // ============================================================
+        // 22. ВЕРИФИКАЦИЯ
         // ============================================================
         let verificationRequestId = null;
 
@@ -1824,7 +1953,77 @@
         }
 
         // ============================================================
-        // 22. СОЗДАНИЕ СДЕЛКИ
+        // 23. ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
+        // ============================================================
+        function showPolicyModal() {
+            showModal(`
+                <h3 style="margin-bottom:12px;color:var(--aqua);">📋 Политика конфиденциальности</h3>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;max-height:60vh;overflow-y:auto;padding-right:4px;">
+
+                    <p><strong>Настоящая политика конфиденциальности</strong> (далее — «Политика») определяет политику Администрации сайта <strong>Trust Gifts</strong> (далее — «Сайт») в отношении обработки Данных Пользователей при использовании ими Сайта, а также содержит сведения о реализуемых требованиях к защите персональных данных Пользователей.</p>
+
+                    <p style="margin-top:12px;">Настоящая политика разработана в соответствии с положениями <strong>Закона «О персональных данных»</strong>, Общего регламента защиты персональных данных ЕС (<strong>GDPR</strong>).</p>
+
+                    <div style="margin:14px 0;padding:12px;background:rgba(0,229,200,0.05);border-radius:10px;border-left:3px solid var(--aqua);">
+                        <div style="font-weight:700;color:var(--aqua);font-size:13px;">📌 Лицо, осуществляющее обработку</div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">
+                            Индивидуальный предприниматель <strong>Медведев Сергей Владимирович</strong><br>
+                            ИНН: 672907378776<br>
+                            Адрес: 214025, Смоленская обл., г. Смоленск, ул. Багратиона, д. 26, кв. 114
+                        </div>
+                    </div>
+
+                    <p>Используя Сайт, Пользователь соглашается с условиями обработки Данных, описанными в настоящей Политике. В случае несогласия Пользователя с такими условиями, любое использование Сайта должно быть прекращено.</p>
+
+                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">1. Общие положения</h4>
+                    <p style="font-size:12px;">1.1. Настоящая Политика является обязательным документом для всех Пользователей Сайта.</p>
+                    <p style="font-size:12px;">1.2. Администрация Сайта оставляет за собой право вносить изменения в настоящую Политику без уведомления Пользователя.</p>
+
+                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">2. Сбор и обработка персональных данных</h4>
+                    <p style="font-size:12px;">2.1. Администрация Сайта собирает и обрабатывает следующие персональные данные Пользователей:</p>
+                    <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
+                        <li>• Имя и фамилия</li>
+                        <li>• Номер телефона</li>
+                        <li>• Данные аккаунта в Telegram (ID, username)</li>
+                        <li>• IP-адрес</li>
+                        <li>• Данные о транзакциях и сделках</li>
+                    </ul>
+
+                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">3. Цели обработки</h4>
+                    <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
+                        <li>• Идентификация Пользователя на Сайте</li>
+                        <li>• Проведение сделок и платежей</li>
+                        <li>• Обеспечение безопасности Сайта</li>
+                        <li>• Выполнение требований законодательства</li>
+                    </ul>
+
+                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">4. Защита персональных данных</h4>
+                    <p style="font-size:12px;">4.1. Администрация Сайта принимает все необходимые меры для защиты персональных данных Пользователей от неправомерного доступа.</p>
+
+                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">5. Права Пользователей</h4>
+                    <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
+                        <li>• Получить информацию о своих персональных данных</li>
+                        <li>• Требовать изменения или удаления своих данных</li>
+                        <li>• Отозвать согласие на обработку данных</li>
+                    </ul>
+
+                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">6. Контактная информация</h4>
+                    <div style="margin:6px 0;padding:10px;background:rgba(0,0,0,0.05);border-radius:8px;font-size:12px;color:var(--text-secondary);">
+                        <div><strong>ИП:</strong> Медведев Сергей Владимирович</div>
+                        <div><strong>ИНН:</strong> 672907378776</div>
+                        <div><strong>Адрес:</strong> 214025, Смоленская обл., г. Смоленск, ул. Багратиона, д. 26, кв. 114</div>
+                        <div><strong>Email:</strong> support@trustgifts.com</div>
+                    </div>
+
+                    <p style="margin-top:12px;font-size:11px;color:var(--text-muted);">Настоящая Политика вступает в силу с момента её размещения на Сайте и действует бессрочно.</p>
+
+                </div>
+                <button class="btn btn-secondary mt-10" onclick="closeModal()"><i class="fas fa-times"></i> Закрыть</button>
+            `);
+        }
+
+        // ============================================================
+        // 24. СОЗДАНИЕ СДЕЛКИ
         // ============================================================
         const categorySelect = document.getElementById('categorySelect');
         if (categorySelect) {
@@ -1945,7 +2144,7 @@
         });
 
         // ============================================================
-        // 23. ЧАТ ПОДДЕРЖКИ
+        // 25. ЧАТ ПОДДЕРЖКИ
         // ============================================================
         let chatInterval = null;
         let chatSessionId = 'user_' + user.id;
@@ -2017,7 +2216,7 @@
         }
 
         // ============================================================
-        // 24. АДМИН-ПАНЕЛЬ
+        // 26. АДМИН-ПАНЕЛЬ
         // ============================================================
         async function loadAdminPanel() {
             const container = document.getElementById('adminContent');
@@ -2199,7 +2398,7 @@
         }
 
         // ============================================================
-        // 25. АДМИН ФУНКЦИИ
+        // 27. АДМИН ФУНКЦИИ
         // ============================================================
         async function adminDeleteDeal(dealId) {
             if (!confirm('Удалить сделку #' + dealId + '?')) return;
@@ -2246,7 +2445,7 @@
         }
 
         // ============================================================
-        // 26. АДМИН: ЗАМОРОЗКА
+        // 28. АДМИН: ЗАМОРОЗКА
         // ============================================================
         async function adminSetFreeze() {
             const userId = document.getElementById('freezeUserId').value.trim();
@@ -2327,7 +2526,7 @@
         }
 
         // ============================================================
-        // 27. ПРОФИЛЬ
+        // 29. ПРОФИЛЬ
         // ============================================================
         async function loadProfile() {
             document.getElementById('profileName').textContent = user.firstName;
@@ -2342,7 +2541,7 @@
         }
 
         // ============================================================
-        // 28. ВИЗАРД
+        // 30. ВИЗАРД
         // ============================================================
         let wizardStep = 0;
 
@@ -2417,7 +2616,7 @@
         };
 
         // ============================================================
-        // 29. MODAL / TOAST
+        // 31. MODAL / TOAST
         // ============================================================
         window.showModal = function(html) {
             document.getElementById('modalBody').innerHTML = html;
@@ -2433,7 +2632,7 @@
         });
 
         // ============================================================
-        // 30. ЗАПУСК
+        // 32. ЗАПУСК
         // ============================================================
         console.log('🌊 Trust Gifts Mini App загружена');
 
@@ -2457,12 +2656,22 @@
                 updateQuickBalance();
                 updateQuickDeals();
             }
-            if (document.getElementById('page-balance').classList.contains('active')) { loadBalance(); }
+            if (document.getElementById('page-balance').classList.contains('active')) {
+                loadBalance();
+                updateInstantWithdrawStatus();
+            }
             if (document.getElementById('page-profile').classList.contains('active')) loadProfile();
-            if (document.getElementById('page-deals').classList.contains('active')) { loadDeals(); }
+            if (document.getElementById('page-deals').classList.contains('active')) {
+                loadDeals();
+                updateInstantWithdrawStatus();
+            }
             if (document.getElementById('page-support').classList.contains('active')) loadChatHistory();
             if (document.getElementById('page-admin').classList.contains('active')) loadAdminPanel();
         }, 15000);
+
+        // Вызываем проверку моментального вывода при загрузке
+        setTimeout(updateInstantWithdrawStatus, 1000);
     </script>
+
 </body>
 </html>
