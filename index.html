@@ -3,194 +3,858 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trust Gifts</title>
+    <title>Hold Gifts</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--bg-primary:#07141a;--bg-secondary:#0b202a;--bg-card:rgba(14,40,52,0.45);--border-color:rgba(0,255,200,0.10);--text-primary:#e6f7f0;--text-secondary:#8fc9d9;--text-muted:#4f8a9a;--aqua:#00e5c8;--coral:#ff6b6b;--sunny:#ffd93d;--gradient-main:linear-gradient(135deg,#00e5c8,#00b8a0,#00897b);--radius:28px;--radius-sm:16px;--success:#00e5a0;--danger:#ff6b6b;--warning:#ffd93d;--shadow-glow:0 8px 40px rgba(0,229,200,0.08);--glass-border:rgba(255,255,255,0.04)}
-        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;padding:16px;padding-bottom:90px;overflow-x:hidden;background-image:radial-gradient(circle at 10%20%,rgba(0,229,200,0.06)0%,transparent 45%),radial-gradient(circle at 90%80%,rgba(255,107,107,0.03)0%,transparent 40%);-webkit-font-smoothing:antialiased}
+        
+        /* ===== BLACK & GOLD ТЕМА ===== */
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: rgba(20, 20, 20, 0.85);
+            --border-color: rgba(212, 175, 55, 0.15);
+            --text-primary: #f5f5f5;
+            --text-secondary: #d4af37;
+            --text-muted: #8a8a8a;
+            --gold: #d4af37;
+            --gold-light: #f0d060;
+            --gold-dark: #b8962a;
+            --gradient-main: linear-gradient(135deg, #d4af37, #f0d060, #b8962a);
+            --radius: 28px;
+            --radius-sm: 16px;
+            --success: #d4af37;
+            --danger: #ff6b6b;
+            --warning: #f0d060;
+            --shadow-glow: 0 8px 40px rgba(212, 175, 55, 0.08);
+            --glass-border: rgba(212, 175, 55, 0.08);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 90px;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.02) 0%, transparent 40%);
+            -webkit-font-smoothing: antialiased;
+        }
+        
         ::-webkit-scrollbar{width:4px}
         ::-webkit-scrollbar-track{background:var(--bg-primary)}
-        ::-webkit-scrollbar-thumb{background:var(--aqua);border-radius:10px}
-        .summer-scene{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-        .summer-scene .sun{position:absolute;top:20px;right:40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#ffd93d,#f9a825 60%,transparent 75%);box-shadow:0 0 120px rgba(255,217,61,0.15);animation:sunSpin 30s linear infinite;opacity:0.3}
-        @keyframes sunSpin{0%{transform:rotate(0deg)scale(1)}50%{transform:rotate(180deg)scale(1.05)}100%{transform:rotate(360deg)scale(1)}}
-        .summer-scene .wave{position:absolute;bottom:0;left:0;right:0;height:120px;background:repeating-linear-gradient(90deg,transparent,rgba(0,229,200,0.02)30px,transparent 60px);animation:waveMove 12s ease-in-out infinite;opacity:0.3}
-        .summer-scene .wave:nth-child(2){bottom:20px;height:80px;animation-delay:-4s;opacity:0.2}
-        .summer-scene .wave:nth-child(3){bottom:0px;height:100px;animation-delay:-8s;opacity:0.15}
-        @keyframes waveMove{0%{transform:translateX(-40px)scaleY(1)}50%{transform:translateX(40px)scaleY(1.1)}100%{transform:translateX(-40px)scaleY(1)}}
-        .summer-scene .cloud{position:absolute;font-size:40px;opacity:0.05;animation:cloudFloat 40s linear infinite}
-        .summer-scene .cloud:nth-child(4){top:10%;left:-10%;animation-duration:35s}
-        .summer-scene .cloud:nth-child(5){top:30%;left:-20%;animation-duration:50s;animation-delay:-10s}
-        .summer-scene .cloud:nth-child(6){top:5%;left:-30%;animation-duration:45s;animation-delay:-20s}
-        @keyframes cloudFloat{0%{transform:translateX(0)}100%{transform:translateX(110vw)}}
-        .summer-scene .bird{position:absolute;font-size:16px;opacity:0.04;animation:birdFly 25s linear infinite}
-        .summer-scene .bird:nth-child(7){top:15%;left:-5%;animation-duration:22s}
-        .summer-scene .bird:nth-child(8){top:25%;left:-15%;animation-duration:28s;animation-delay:-8s}
-        @keyframes birdFly{0%{transform:translateX(0)translateY(0)}25%{transform:translateX(25vw)translateY(-20px)}50%{transform:translateX(50vw)translateY(10px)}75%{transform:translateX(75vw)translateY(-15px)}100%{transform:translateX(110vw)translateY(0)}}
+        ::-webkit-scrollbar-thumb{background:var(--gold);border-radius:10px}
+        
+        /* ===== ФОН ===== */
+        .bg-scene {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .bg-scene .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.12;
+            animation: orbFloat 20s ease-in-out infinite alternate;
+        }
+        .bg-scene .orb:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            top: -10%;
+            right: -10%;
+            background: #d4af37;
+        }
+        .bg-scene .orb:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            bottom: -5%;
+            left: -10%;
+            background: #b8962a;
+            animation-delay: -8s;
+        }
+        .bg-scene .orb:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            top: 40%;
+            left: 30%;
+            background: #f0d060;
+            animation-delay: -14s;
+            opacity: 0.06;
+        }
+        .bg-scene .line {
+            position: absolute;
+            width: 200%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.04), transparent);
+            top: 30%;
+            left: -50%;
+            transform: rotate(-15deg);
+        }
+        .bg-scene .line:nth-child(4) {
+            top: 60%;
+            transform: rotate(10deg);
+        }
+        
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -40px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+            100% { transform: translate(10px, -10px) scale(1.02); }
+        }
+        
         @keyframes popIn{0%{opacity:0;transform:scale(0.96)translateY(12px)}100%{opacity:1;transform:scale(1)translateY(0)}}
         @keyframes slideFade{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
-        @keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(0,229,200,0.05)}50%{box-shadow:0 0 60px rgba(0,229,200,0.12)}}
+        @keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(212,175,55,0.05)}50%{box-shadow:0 0 60px rgba(212,175,55,0.12)}}
         @keyframes shimmerText{0%{background-position:-200% center}100%{background-position:200% center}}
         @keyframes floatUp{0%,100%{transform:translateY(0)rotate(0deg)}50%{transform:translateY(-16px)rotate(4deg)}}
         @keyframes spinSlow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        .glass{background:var(--bg-card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--glass-border);box-shadow:var(--shadow-glow),inset 0 1px 0 rgba(255,255,255,0.03);animation:popIn 0.5s ease forwards}
-        .glass:hover{border-color:rgba(0,229,200,0.12)}
-        .header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-radius:var(--radius);margin-bottom:16px;flex-wrap:wrap;gap:8px;position:relative;z-index:2}
-        .header-logo{font-size:38px;filter:drop-shadow(0 0 20px rgba(0,229,200,0.3));animation:floatUp 5s ease-in-out infinite}
-        .header-title{font-size:24px;font-weight:900;background:linear-gradient(135deg,#00e5c8,#ffd93d,#ff6b6b);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmerText 4s linear infinite}
-        .header-title span{font-weight:400;-webkit-text-fill-color:var(--text-secondary)}
-        .header-user{font-size:12px;color:var(--text-secondary);font-weight:500}
-        .header-balance{font-size:15px;font-weight:700;color:var(--aqua);background:rgba(0,229,200,0.06);padding:2px 18px;border-radius:30px;border:1px solid rgba(0,229,200,0.1)}
-        .online-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,200,0.06);padding:4px 14px;border-radius:30px;font-size:11px;font-weight:600;color:var(--aqua);border:1px solid rgba(0,229,200,0.08)}
-        .online-dot{width:7px;height:7px;background:var(--aqua);border-radius:50%;display:inline-block;animation:pulseGlow 1.8s ease-in-out infinite}
-        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;z-index:2;position:relative}
-        .stat-card{padding:14px 10px;border-radius:var(--radius-sm);text-align:center;background:var(--bg-card);backdrop-filter:blur(12px);border:1px solid var(--border-color);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);animation:slideFade 0.5s ease backwards}
+        @keyframes goldPulse{0%,100%{opacity:0.6}50%{opacity:1}}
+        
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-glow), inset 0 1px 0 rgba(212, 175, 55, 0.03);
+            animation: popIn 0.5s ease forwards;
+        }
+        .glass:hover {
+            border-color: rgba(212, 175, 55, 0.15);
+        }
+        
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+            border-color: rgba(212, 175, 55, 0.1);
+        }
+        .header-logo {
+            font-size: 38px;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.2));
+            animation: floatUp 5s ease-in-out infinite;
+        }
+        .header-title {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #d4af37, #f0d060, #b8962a);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmerText 4s linear infinite;
+        }
+        .header-title span {
+            font-weight: 400;
+            -webkit-text-fill-color: var(--text-secondary);
+            opacity: 0.5;
+        }
+        .header-user {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .header-balance {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold);
+            background: rgba(212, 175, 55, 0.06);
+            padding: 2px 18px;
+            border-radius: 30px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        .online-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(212, 175, 55, 0.06);
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+        }
+        .online-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--gold);
+            border-radius: 50%;
+            display: inline-block;
+            animation: goldPulse 1.8s ease-in-out infinite;
+        }
+        
+        /* ===== СТАТИСТИКА ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+            z-index: 2;
+            position: relative;
+        }
+        .stat-card {
+            padding: 14px 10px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            animation: slideFade 0.5s ease backwards;
+        }
         .stat-card:nth-child(1){animation-delay:0.05s}
         .stat-card:nth-child(2){animation-delay:0.10s}
         .stat-card:nth-child(3){animation-delay:0.15s}
-        .stat-card:hover{transform:translateY(-6px)scale(1.02);border-color:rgba(0,229,200,0.2);box-shadow:0 12px 40px rgba(0,229,200,0.08)}
-        .stat-number{font-size:26px;font-weight:900;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;transition:all 0.3s}
-        .stat-label{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;font-weight:600;margin-top:4px}
-        .nav{display:flex;gap:6px;background:var(--bg-card);backdrop-filter:blur(20px);padding:8px;border-radius:var(--radius);border:1px solid var(--border-color);margin-bottom:16px;overflow-x:auto;flex-wrap:nowrap;position:relative;z-index:2;-webkit-overflow-scrolling:touch}
-        .nav button{flex:1;min-width:48px;padding:10px 4px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);font-size:10px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;-webkit-tap-highlight-color:transparent}
-        .nav button i{font-size:20px;transition:all 0.3s}
-        .nav button span{font-size:8px;opacity:0.7;font-weight:500}
-        .nav button::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:0;height:2px;background:var(--gradient-main);border-radius:10px;transition:width 0.4s ease}
-        .nav button:hover:not(.active){color:var(--text-primary);background:rgba(0,229,200,0.04);transform:translateY(-2px)}
-        .nav button.active{background:var(--gradient-main);color:#07141a;box-shadow:0 8px 30px rgba(0,229,200,0.2);transform:scale(1.02)}
-        .nav button.active i{color:#07141a}
-        .nav button.active::after{width:60%}
+        .stat-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: rgba(212, 175, 55, 0.2);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.08);
+        }
+        .stat-number {
+            font-size: 26px;
+            font-weight: 900;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            transition: all 0.3s;
+        }
+        .stat-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .stat-label i {
+            color: var(--gold);
+            -webkit-text-fill-color: var(--gold);
+        }
+        
+        /* ===== NAV ===== */
+        .nav {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            padding: 8px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            position: relative;
+            z-index: 2;
+            -webkit-overflow-scrolling: touch;
+        }
+        .nav button {
+            flex: 1;
+            min-width: 48px;
+            padding: 10px 4px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            white-space: nowrap;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav button i {
+            font-size: 20px;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+        .nav button span {
+            font-size: 8px;
+            opacity: 0.6;
+            font-weight: 500;
+        }
+        .nav button::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--gradient-main);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+        .nav button:hover:not(.active) {
+            color: var(--text-primary);
+            background: rgba(212, 175, 55, 0.04);
+            transform: translateY(-2px);
+        }
+        .nav button:hover:not(.active) i {
+            color: var(--gold);
+        }
+        .nav button.active {
+            background: var(--gradient-main);
+            color: #0a0a0a;
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+            transform: scale(1.02);
+        }
+        .nav button.active i {
+            color: #0a0a0a;
+        }
+        .nav button.active::after {
+            width: 60%;
+        }
+        
+        /* ===== PAGES ===== */
         .page{display:none;animation:slideFade 0.5s ease;position:relative;z-index:2}
         .page.active{display:block}
-        .card{background:var(--bg-card);backdrop-filter:blur(16px);border-radius:var(--radius);padding:20px;margin:10px 0;border:1px solid var(--border-color);box-shadow:0 8px 40px rgba(0,0,0,0.12);transition:all 0.4s ease;animation:slideFade 0.5s ease backwards}
-        .card:hover{border-color:rgba(0,229,200,0.12);transform:translateY(-2px)}
-        .card-title{font-size:18px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:10px;letter-spacing:-0.3px}
-        .card-title i{color:var(--aqua);font-size:22px;text-shadow:0 0 30px rgba(0,229,200,0.2)}
-        .card-subtitle{font-size:13px;color:var(--text-secondary);font-weight:400;margin-bottom:14px}
-        .hero-card{background:linear-gradient(145deg,rgba(0,229,200,0.08),rgba(14,40,52,0.7)50%,rgba(255,107,107,0.04));border-color:rgba(0,229,200,0.15);overflow:hidden;position:relative;min-height:200px}
-        .hero-card::before{content:'🏄';position:absolute;font-size:120px;right:-10px;bottom:-20px;opacity:0.08;transform:rotate(-10deg)}
-        .hero-card::after{content:'🌊';position:absolute;font-size:80px;left:-10px;top:-10px;opacity:0.06}
-        .hero-wave{position:absolute;bottom:0;left:0;right:0;height:40px;background:repeating-linear-gradient(90deg,transparent,rgba(0,229,200,0.03)20px,transparent 40px);animation:waveMove 6s ease-in-out infinite}
-        .btn{padding:12px 20px;border:none;border-radius:var(--radius-sm);font-weight:700;font-size:14px;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;-webkit-tap-highlight-color:transparent}
+        
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+            transition: all 0.4s ease;
+            animation: slideFade 0.5s ease backwards;
+        }
+        .card:hover {
+            border-color: rgba(212, 175, 55, 0.12);
+            transform: translateY(-2px);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        .card-title i {
+            color: var(--gold);
+            font-size: 22px;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+        }
+        .card-title span {
+            color: var(--text-primary);
+        }
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-bottom: 14px;
+        }
+        
+        /* ===== HERO ===== */
+        .hero-card {
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.06), rgba(20, 20, 20, 0.9) 50%, rgba(212, 175, 55, 0.02));
+            border-color: rgba(212, 175, 55, 0.12);
+            overflow: hidden;
+            position: relative;
+            min-height: 200px;
+        }
+        .hero-card::before {
+            content: '🏆';
+            position: absolute;
+            font-size: 120px;
+            right: -10px;
+            bottom: -20px;
+            opacity: 0.04;
+            transform: rotate(-10deg);
+        }
+        .hero-card::after {
+            content: '✦';
+            position: absolute;
+            font-size: 80px;
+            left: -10px;
+            top: -10px;
+            opacity: 0.04;
+            color: var(--gold);
+        }
+        .hero-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: repeating-linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.03) 20px, transparent 40px);
+            animation: waveMove 6s ease-in-out infinite;
+        }
+        @keyframes waveMove{0%{transform:translateX(-40px)scaleY(1)}50%{transform:translateX(40px)scaleY(1.1)}100%{transform:translateX(-40px)scaleY(1)}}
+        
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
         .btn:active{transform:scale(0.96)}
-        .btn-primary{background:var(--gradient-main);color:#07141a;box-shadow:0 8px 30px rgba(0,229,200,0.15)}
-        .btn-primary:hover{transform:translateY(-4px)scale(1.02);box-shadow:0 12px 50px rgba(0,229,200,0.25)}
-        .btn-secondary{background:rgba(255,255,255,0.04);color:var(--text-primary);border:1px solid var(--border-color)}
-        .btn-secondary:hover{background:rgba(255,255,255,0.08);transform:translateY(-3px)}
-        .btn-gold{background:linear-gradient(135deg,#ffd93d,#f9a825);color:#07141a;box-shadow:0 8px 30px rgba(255,217,61,0.15)}
-        .btn-gold:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(255,217,61,0.25)}
-        .btn-success{background:rgba(0,229,160,0.12);color:var(--success);border:1px solid rgba(0,229,160,0.15)}
-        .btn-success:hover{background:rgba(0,229,160,0.2);transform:translateY(-3px)}
-        .btn-danger{background:rgba(255,107,107,0.12);color:var(--danger);border:1px solid rgba(255,107,107,0.15)}
-        .btn-danger:hover{background:rgba(255,107,107,0.2);transform:translateY(-3px)}
+        .btn-primary {
+            background: var(--gradient-main);
+            color: #0a0a0a;
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+        }
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 50px rgba(212, 175, 55, 0.25);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            background: rgba(212, 175, 55, 0.06);
+            transform: translateY(-3px);
+            border-color: rgba(212, 175, 55, 0.2);
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #d4af37, #f0d060);
+            color: #0a0a0a;
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+        }
+        .btn-gold:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.25);
+        }
+        .btn-success {
+            background: rgba(212, 175, 55, 0.12);
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        .btn-success:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: translateY(-3px);
+        }
+        .btn-danger {
+            background: rgba(255,107,107,0.12);
+            color: var(--danger);
+            border: 1px solid rgba(255,107,107,0.15);
+        }
+        .btn-danger:hover {
+            background: rgba(255,107,107,0.2);
+            transform: translateY(-3px);
+        }
         .btn-sm{padding:8px 16px;font-size:12px;width:auto}
-        .btn-support{background:linear-gradient(135deg,#ff6b6b,#ee5a24);color:#fff;box-shadow:0 8px 30px rgba(255,107,107,0.2)}
-        .btn-support:hover{transform:translateY(-4px)scale(1.02);box-shadow:0 12px 40px rgba(255,107,107,0.3)}
+        .btn-support {
+            background: linear-gradient(135deg, #d4af37, #b8962a);
+            color: #0a0a0a;
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.2);
+        }
+        .btn-support:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.3);
+        }
         .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none!important}
+        
+        /* ===== FORMS ===== */
         .form-group{margin:12px 0}
-        .form-group label{display:block;color:var(--text-secondary);font-size:12px;font-weight:600;margin-bottom:5px}
-        .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;background:rgba(0,0,0,0.25);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);font-size:14px;font-family:'Inter',sans-serif;transition:all 0.3s;box-sizing:border-box;-webkit-appearance:none;appearance:none}
-        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--aqua);box-shadow:0 0 0 4px rgba(0,229,200,0.06)}
+        .form-group label{
+            display:block;
+            color: var(--text-secondary);
+            font-size:12px;
+            font-weight:600;
+            margin-bottom:5px;
+        }
+        .form-group input,.form-group select,.form-group textarea{
+            width:100%;
+            padding:12px 16px;
+            background:rgba(0,0,0,0.4);
+            border:1px solid var(--border-color);
+            border-radius:var(--radius-sm);
+            color:var(--text-primary);
+            font-size:14px;
+            font-family:'Inter',sans-serif;
+            transition:all 0.3s;
+            box-sizing:border-box;
+            -webkit-appearance:none;
+            appearance:none;
+        }
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+            outline:none;
+            border-color:var(--gold);
+            box-shadow:0 0 0 4px rgba(212,175,55,0.06);
+        }
         .form-group textarea{resize:vertical;min-height:70px}
+        
+        /* ===== BALANCE ===== */
         .balance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-        .balance-item{display:flex;flex-direction:column;align-items:center;padding:12px 8px;background:rgba(0,0,0,0.15);border-radius:var(--radius-sm);border:1px solid var(--border-color);transition:all 0.3s}
-        .balance-item:hover{border-color:rgba(0,229,200,0.15);transform:translateY(-2px)}
+        .balance-item{
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            padding:12px 8px;
+            background:rgba(0,0,0,0.3);
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border-color);
+            transition:all 0.3s;
+        }
+        .balance-item:hover{border-color:rgba(212,175,55,0.15);transform:translateY(-2px)}
         .balance-item .label{font-size:10px;color:var(--text-muted);font-weight:500}
-        .balance-item .value{font-size:18px;font-weight:800;margin-top:2px}
-        .balance-item .value.ton{color:var(--aqua)}
-        .balance-item .value.stars{color:var(--sunny)}
-        .balance-item .value.rub{color:var(--success)}
-        .balance-item .value.uah{color:var(--coral)}
-        .deal-card{background:rgba(0,0,0,0.15);border-radius:var(--radius-sm);padding:14px;margin:6px 0;border:1px solid var(--border-color);transition:all 0.3s}
-        .deal-card:hover{border-color:rgba(0,229,200,0.1)}
-        .deal-status{display:inline-block;padding:2px 14px;border-radius:30px;font-size:10px;font-weight:700}
-        .deal-status.waiting{background:rgba(255,217,61,0.12);color:#ffd93d}
-        .deal-status.paid{background:rgba(0,229,160,0.12);color:#00e5a0}
-        .deal-status.awaiting{background:rgba(0,229,200,0.12);color:var(--aqua)}
-        .deal-status.completed{background:rgba(0,229,200,0.12);color:var(--aqua)}
-        .support-block{background:rgba(0,229,200,0.04);border-radius:var(--radius-sm);padding:14px;border-left:3px solid var(--aqua);margin-top:8px}
-        .support-block a{color:var(--aqua);text-decoration:none;font-weight:600}
-        .guide-step{display:flex;gap:14px;padding:12px;background:rgba(0,0,0,0.1);border-radius:var(--radius-sm);margin:6px 0;align-items:flex-start;border:1px solid var(--border-color)}
-        .guide-step .num{font-size:20px;font-weight:900;color:var(--aqua);min-width:32px;text-align:center}
+        .balance-item .value{font-size:18px;font-weight:800;margin-top:2px;color:var(--gold)}
+        
+        /* ===== DEAL CARD ===== */
+        .deal-card{
+            background:rgba(0,0,0,0.3);
+            border-radius:var(--radius-sm);
+            padding:14px;
+            margin:6px 0;
+            border:1px solid var(--border-color);
+            transition:all 0.3s;
+        }
+        .deal-card:hover{border-color:rgba(212,175,55,0.1)}
+        .deal-status{
+            display:inline-block;
+            padding:2px 14px;
+            border-radius:30px;
+            font-size:10px;
+            font-weight:700;
+        }
+        .deal-status.waiting{background:rgba(212,175,55,0.12);color:var(--gold)}
+        .deal-status.paid{background:rgba(212,175,55,0.12);color:var(--gold)}
+        .deal-status.awaiting{background:rgba(212,175,55,0.12);color:var(--gold-light)}
+        .deal-status.completed{background:rgba(212,175,55,0.12);color:var(--gold)}
+        
+        /* ===== SUPPORT BLOCK ===== */
+        .support-block{
+            background:rgba(212,175,55,0.04);
+            border-radius:var(--radius-sm);
+            padding:14px;
+            border-left:3px solid var(--gold);
+            margin-top:8px;
+        }
+        .support-block a{color:var(--gold);text-decoration:none;font-weight:600}
+        
+        /* ===== GUIDE STEP ===== */
+        .guide-step{
+            display:flex;
+            gap:14px;
+            padding:12px;
+            background:rgba(0,0,0,0.3);
+            border-radius:var(--radius-sm);
+            margin:6px 0;
+            align-items:flex-start;
+            border:1px solid var(--border-color);
+        }
+        .guide-step .num{
+            font-size:20px;
+            font-weight:900;
+            color:var(--gold);
+            min-width:32px;
+            text-align:center;
+        }
         .guide-step .content{font-size:13px;color:var(--text-secondary);line-height:1.5}
         .guide-step .content strong{color:var(--text-primary)}
-        .verification-status{padding:10px 14px;border-radius:var(--radius-sm);margin:8px 0;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-        .verification-status.verified{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.15);color:var(--success)}
-        .verification-status.unverified{background:rgba(255,217,61,0.08);border:1px solid rgba(255,217,61,0.15);color:var(--sunny)}
-        .verification-status.frozen{background:rgba(255,107,107,0.08);border:1px solid var(--danger);color:var(--danger)}
-        .instant-withdraw-status.available{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.15);color:var(--success)}
-        .instant-withdraw-status.unavailable{background:rgba(255,217,61,0.08);border:1px solid rgba(255,217,61,0.15);color:var(--sunny)}
+        
+        /* ===== VERIFICATION ===== */
+        .verification-status{
+            padding:10px 14px;
+            border-radius:var(--radius-sm);
+            margin:8px 0;
+            font-size:13px;
+            font-weight:600;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        .verification-status.verified{
+            background:rgba(212,175,55,0.08);
+            border:1px solid rgba(212,175,55,0.15);
+            color:var(--gold);
+        }
+        .verification-status.unverified{
+            background:rgba(212,175,55,0.08);
+            border:1px solid rgba(212,175,55,0.15);
+            color:var(--gold-light);
+        }
+        .verification-status.frozen{
+            background:rgba(255,107,107,0.08);
+            border:1px solid var(--danger);
+            color:var(--danger);
+        }
+        
+        /* ===== WIZARD ===== */
         .wizard-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0 16px}
-        .wizard-dot{height:6px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden}
-        .wizard-dot.active{background:var(--gradient-main);box-shadow:0 0 24px rgba(0,229,200,0.2)}
+        .wizard-dot{
+            height:6px;
+            border-radius:999px;
+            background:rgba(255,255,255,0.06);
+            overflow:hidden;
+        }
+        .wizard-dot.active{background:var(--gradient-main);box-shadow:0 0 24px rgba(212,175,55,0.2)}
         .wizard-panel{display:none;animation:slideFade 0.35s ease}
         .wizard-panel.active{display:block}
-        .wizard-preview{padding:14px;border-radius:var(--radius-sm);border:1px solid rgba(0,229,200,0.14);background:rgba(0,229,200,0.04);margin-top:10px}
-        .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(24px);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
+        
+        /* ===== MODAL ===== */
+        .modal{
+            position:fixed;
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+            background:rgba(0,0,0,0.9);
+            backdrop-filter:blur(24px);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:1000;
+            padding:16px;
+        }
         .modal.active{display:flex}
-        .modal-content{background:var(--bg-secondary);border-radius:var(--radius);padding:24px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;border:1px solid var(--border-color);box-shadow:0 24px 80px rgba(0,0,0,0.5);animation:slideFade 0.4s ease}
-        .modal-close{float:right;font-size:24px;cursor:pointer;color:var(--text-muted);background:none;border:none;transition:0.3s;padding:4px}
-        .modal-close:hover{color:var(--text-primary);transform:rotate(90deg)}
-        .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg-secondary);color:var(--text-primary);padding:14px 24px;border-radius:var(--radius-sm);border:1px solid var(--border-color);box-shadow:0 16px 60px rgba(0,0,0,0.4);z-index:2000;animation:slideFade 0.4s ease;max-width:92%;text-align:center;font-weight:500;font-size:14px;backdrop-filter:blur(20px)}
-        .toast.success{border-color:rgba(0,229,160,0.3)}
+        .modal-content{
+            background:var(--bg-secondary);
+            border-radius:var(--radius);
+            padding:24px;
+            max-width:480px;
+            width:100%;
+            max-height:85vh;
+            overflow-y:auto;
+            border:1px solid var(--border-color);
+            box-shadow:0 24px 80px rgba(0,0,0,0.5);
+            animation:slideFade 0.4s ease;
+        }
+        .modal-close{
+            float:right;
+            font-size:24px;
+            cursor:pointer;
+            color:var(--text-muted);
+            background:none;
+            border:none;
+            transition:0.3s;
+            padding:4px;
+        }
+        .modal-close:hover{color:var(--gold);transform:rotate(90deg)}
+        
+        /* ===== TOAST ===== */
+        .toast{
+            position:fixed;
+            bottom:24px;
+            left:50%;
+            transform:translateX(-50%);
+            background:var(--bg-secondary);
+            color:var(--text-primary);
+            padding:14px 24px;
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border-color);
+            box-shadow:0 16px 60px rgba(0,0,0,0.4);
+            z-index:2000;
+            animation:slideFade 0.4s ease;
+            max-width:92%;
+            text-align:center;
+            font-weight:500;
+            font-size:14px;
+            backdrop-filter:blur(20px);
+        }
+        .toast.success{border-color:rgba(212,175,55,0.3)}
         .toast.error{border-color:rgba(255,107,107,0.3)}
-        .toast.info{border-color:rgba(0,229,200,0.3)}
-        .ticket-card{background:rgba(0,0,0,0.15);border-radius:var(--radius-sm);padding:14px;margin:6px 0;border:1px solid var(--border-color)}
-        .ticket-status{font-size:11px;font-weight:700;padding:2px 12px;border-radius:30px;display:inline-block}
-        .ticket-status.open{background:rgba(0,229,160,0.1);color:var(--success);border:1px solid rgba(0,229,160,0.1)}
-        .ticket-status.closed{background:rgba(255,255,255,0.05);color:var(--text-muted);border:1px solid var(--border-color)}
-        .ticket-status.waiting{background:rgba(255,217,61,0.1);color:var(--sunny);border:1px solid rgba(255,217,61,0.1)}
+        .toast.info{border-color:rgba(212,175,55,0.3)}
+        
+        /* ===== CHAT ===== */
+        .chat-container{
+            display:flex;
+            flex-direction:column;
+            height:500px;
+            max-height:70vh;
+            background:rgba(0,0,0,0.3);
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border-color);
+            overflow:hidden;
+        }
+        .chat-header{
+            padding:14px 18px;
+            background:rgba(212,175,55,0.04);
+            border-bottom:1px solid var(--border-color);
+            display:flex;
+            align-items:center;
+            gap:12px;
+            flex-shrink:0;
+        }
+        .chat-header .avatar{
+            width:38px;
+            height:38px;
+            border-radius:50%;
+            background:var(--gradient-main);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:16px;
+            font-weight:700;
+            color:#0a0a0a;
+        }
+        .chat-header .info{flex:1}
+        .chat-header .info .name{font-weight:700;font-size:14px;color:var(--gold)}
+        .chat-header .info .status{font-size:11px;color:var(--text-muted)}
+        .chat-messages{
+            flex:1;
+            overflow-y:auto;
+            padding:16px;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            scroll-behavior:smooth;
+        }
+        .chat-messages::-webkit-scrollbar{width:3px}
+        .chat-messages::-webkit-scrollbar-thumb{background:var(--gold);border-radius:10px}
+        .msg{
+            max-width:80%;
+            padding:10px 14px;
+            border-radius:var(--radius-sm);
+            font-size:13px;
+            line-height:1.5;
+            animation:slideFade 0.3s ease;
+            position:relative;
+            word-wrap:break-word;
+        }
+        .msg.user{
+            align-self:flex-end;
+            background:var(--gradient-main);
+            color:#0a0a0a;
+            border-bottom-right-radius:4px;
+        }
+        .msg.admin{
+            align-self:flex-start;
+            background:rgba(255,255,255,0.04);
+            border:1px solid var(--border-color);
+            border-bottom-left-radius:4px;
+        }
+        .msg .time{font-size:9px;color:var(--text-muted);margin-top:4px;display:block;text-align:right;opacity:0.6}
+        .msg.user .time{color:rgba(10,10,10,0.5)}
+        .chat-input{
+            padding:12px 16px;
+            background:rgba(0,0,0,0.3);
+            border-top:1px solid var(--border-color);
+            display:flex;
+            gap:10px;
+            flex-shrink:0;
+            align-items:center;
+        }
+        .chat-input input{
+            flex:1;
+            padding:10px 16px;
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border-color);
+            background:rgba(0,0,0,0.3);
+            color:var(--text-primary);
+            font-size:14px;
+            font-family:'Inter',sans-serif;
+            outline:none;
+            transition:0.3s;
+        }
+        .chat-input input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(212,175,55,0.04)}
+        .chat-input button{
+            padding:10px 18px;
+            border-radius:var(--radius-sm);
+            border:none;
+            background:var(--gradient-main);
+            color:#0a0a0a;
+            font-weight:700;
+            cursor:pointer;
+            transition:0.3s;
+            flex-shrink:0;
+        }
+        .chat-input button:hover{transform:scale(1.04);box-shadow:0 8px 30px rgba(212,175,55,0.15)}
+        
+        /* ===== ADMIN ===== */
         .admin-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-        .admin-stat-card{padding:18px 16px;border-radius:var(--radius-sm);background:rgba(0,0,0,0.15);border:1px solid var(--border-color);text-align:center;transition:0.4s;animation:slideFade 0.5s ease backwards}
+        .admin-stat-card{
+            padding:18px 16px;
+            border-radius:var(--radius-sm);
+            background:rgba(0,0,0,0.3);
+            border:1px solid var(--border-color);
+            text-align:center;
+            transition:0.4s;
+            animation:slideFade 0.5s ease backwards;
+        }
         .admin-stat-card:nth-child(1){animation-delay:0.05s}
         .admin-stat-card:nth-child(2){animation-delay:0.10s}
         .admin-stat-card:nth-child(3){animation-delay:0.15s}
         .admin-stat-card:nth-child(4){animation-delay:0.20s}
         .admin-stat-card:nth-child(5){animation-delay:0.25s}
         .admin-stat-card:nth-child(6){animation-delay:0.30s}
-        .admin-stat-card:hover{transform:translateY(-4px);border-color:rgba(0,229,200,0.15)}
-        .admin-stat-card .num{font-size:28px;font-weight:900;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .admin-stat-card:hover{transform:translateY(-4px);border-color:rgba(212,175,55,0.15)}
+        .admin-stat-card .num{
+            font-size:28px;
+            font-weight:900;
+            background:var(--gradient-main);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
         .admin-stat-card .label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
-        .admin-tabs{display:flex;gap:4px;background:rgba(0,0,0,0.15);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-        .admin-tabs button{padding:8px 16px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);font-weight:600;font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:0.3s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-        .admin-tabs button.active{background:var(--gradient-main);color:#07141a;box-shadow:0 4px 20px rgba(0,229,200,0.1)}
-        .admin-tabs button:hover:not(.active){color:var(--text-primary);background:rgba(255,255,255,0.03)}
+        .admin-tabs{
+            display:flex;
+            gap:4px;
+            background:rgba(0,0,0,0.3);
+            padding:4px;
+            border-radius:var(--radius-sm);
+            margin-bottom:16px;
+            overflow-x:auto;
+            -webkit-overflow-scrolling:touch;
+        }
+        .admin-tabs button{
+            padding:8px 16px;
+            border:none;
+            border-radius:var(--radius-sm);
+            background:transparent;
+            color:var(--text-muted);
+            font-weight:600;
+            font-size:12px;
+            font-family:'Inter',sans-serif;
+            cursor:pointer;
+            transition:0.3s;
+            white-space:nowrap;
+            -webkit-tap-highlight-color:transparent;
+        }
+        .admin-tabs button.active{
+            background:var(--gradient-main);
+            color:#0a0a0a;
+            box-shadow:0 4px 20px rgba(212,175,55,0.1);
+        }
+        .admin-tabs button:hover:not(.active){color:var(--text-primary);background:rgba(212,175,55,0.04)}
         .admin-panel{display:none;animation:slideFade 0.4s ease}
         .admin-panel.active{display:block}
-        .nft-card{display:inline-flex;align-items:center;gap:12px;padding:10px 16px;border-radius:var(--radius-sm);background:rgba(0,229,200,0.04);border:1px solid rgba(0,229,200,0.08);margin-top:6px}
-        .nft-card .icon{font-size:28px}
-        .nft-card .info .name{font-weight:700;color:var(--aqua)}
-        .nft-card .info .number{font-size:12px;color:var(--text-muted)}
-        .nft-card .info .link{font-size:11px;color:var(--text-secondary);word-break:break-all}
-        .chat-container{display:flex;flex-direction:column;height:500px;max-height:70vh;background:rgba(0,0,0,0.15);border-radius:var(--radius-sm);border:1px solid var(--border-color);overflow:hidden}
-        .chat-header{padding:14px 18px;background:rgba(0,229,200,0.04);border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:12px;flex-shrink:0}
-        .chat-header .avatar{width:38px;height:38px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#07141a}
-        .chat-header .info{flex:1}
-        .chat-header .info .name{font-weight:700;font-size:14px}
-        .chat-header .info .status{font-size:11px;color:var(--text-muted)}
-        .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth}
-        .chat-messages::-webkit-scrollbar{width:3px}
-        .chat-messages::-webkit-scrollbar-thumb{background:var(--aqua);border-radius:10px}
-        .msg{max-width:80%;padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;line-height:1.5;animation:slideFade 0.3s ease;position:relative;word-wrap:break-word}
-        .msg.user{align-self:flex-end;background:var(--gradient-main);color:#07141a;border-bottom-right-radius:4px}
-        .msg.admin{align-self:flex-start;background:rgba(255,255,255,0.06);border:1px solid var(--border-color);border-bottom-left-radius:4px}
-        .msg .time{font-size:9px;color:var(--text-muted);margin-top:4px;display:block;text-align:right;opacity:0.6}
-        .msg.user .time{color:rgba(7,20,26,0.5)}
-        .msg .typing-indicator{display:flex;gap:4px;padding:8px 0}
-        .msg .typing-indicator span{width:8px;height:8px;border-radius:50%;background:var(--text-muted);animation:typingBounce 1.2s ease-in-out infinite}
-        .msg .typing-indicator span:nth-child(2){animation-delay:0.2s}
-        .msg .typing-indicator span:nth-child(3){animation-delay:0.4s}
-        .chat-input{padding:12px 16px;background:rgba(0,0,0,0.15);border-top:1px solid var(--border-color);display:flex;gap:10px;flex-shrink:0;align-items:center}
-        .chat-input input{flex:1;padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:0.3s}
-        .chat-input input:focus{border-color:var(--aqua);box-shadow:0 0 0 4px rgba(0,229,200,0.04)}
-        .chat-input button{padding:10px 18px;border-radius:var(--radius-sm);border:none;background:var(--gradient-main);color:#07141a;font-weight:700;cursor:pointer;transition:0.3s;flex-shrink:0}
-        .chat-input button:hover{transform:scale(1.04);box-shadow:0 8px 30px rgba(0,229,200,0.15)}
-        .chat-input button:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+        
+        /* ===== OTHER ===== */
         .loading{text-align:center;padding:30px;color:var(--text-muted)}
-        .loading i{font-size:28px;color:var(--aqua);animation:spinSlow 1.2s linear infinite;display:block;margin-bottom:12px}
+        .loading i{font-size:28px;color:var(--gold);animation:spinSlow 1.2s linear infinite;display:block;margin-bottom:12px}
         .mt-10{margin-top:10px}
         .mt-6{margin-top:6px}
         .flex{display:flex;gap:8px}
@@ -198,109 +862,27 @@
         .text-center{text-align:center}
         .text-muted{color:var(--text-muted)}
         .text-secondary{color:var(--text-secondary)}
-        .text-success{color:var(--success)}
+        .text-success{color:var(--gold)}
         .text-danger{color:var(--danger)}
-        @media(max-width:480px){body{padding:10px}.header{padding:12px 14px}.header-title{font-size:18px}.stats-grid{grid-template-columns:repeat(3,1fr);gap:6px}.balance-grid{grid-template-columns:repeat(2,1fr)}.nav button{min-width:40px;padding:8px 4px}.nav button i{font-size:16px}.nav button span{font-size:7px}.card{padding:14px}.btn{padding:10px 14px;font-size:12px}.admin-stat-grid{grid-template-columns:1fr 1fr}.chat-container{height:400px}.summer-scene .sun{width:60px;height:60px;right:10px;top:10px}}
-        @media(min-width:768px){body{padding:24px;max-width:880px;margin:0 auto}.stats-grid{grid-template-columns:repeat(3,1fr)}.balance-grid{grid-template-columns:repeat(4,1fr)}.admin-stat-grid{grid-template-columns:repeat(4,1fr)}}
-        @media(max-width:360px){.stats-grid{grid-template-columns:1fr 1fr}.stat-card:last-child{grid-column:span 2}.nav button{min-width:34px;padding:6px 2px}.nav button i{font-size:14px}.header-title{font-size:15px}.header-logo{font-size:28px}}
-        .verification-step{display:none;animation:slideFade 0.3s ease}
-        .verification-step.active{display:block}
-        .verification-step .step-title{font-size:16px;font-weight:700;margin-bottom:8px;color:var(--aqua)}
-        .verification-step .step-desc{font-size:13px;color:var(--text-secondary);margin-bottom:12px}
-        .verification-step input{width:100%;padding:12px 16px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:14px;font-family:'Inter',sans-serif;outline:none;box-sizing:border-box;margin-bottom:8px}
-        .verification-step input:focus{border-color:var(--aqua)}
-        .verification-step .btn-verify{width:100%;padding:12px;border-radius:var(--radius-sm);border:none;background:var(--gradient-main);color:#07141a;font-weight:700;font-size:14px;cursor:pointer;transition:0.3s;font-family:'Inter',sans-serif}
-        .verification-step .btn-verify:hover{transform:scale(1.02)}
-        .verification-step .btn-verify:disabled{opacity:0.4;cursor:not-allowed;transform:none}
-        .verification-step .btn-back{width:100%;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);font-size:13px;cursor:pointer;margin-top:6px;font-family:'Inter',sans-serif;transition:0.3s}
-        .verification-step .btn-back:hover{background:rgba(255,255,255,0.03)}
-        .transfer-confirm-box{background:rgba(255,107,107,0.06);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:14px;margin:8px 0}
-        .transfer-confirm-box .warning-text{color:var(--danger);font-weight:600;font-size:13px}
-        .transfer-confirm-box .info-text{color:var(--text-secondary);font-size:12px;margin-top:4px}
-        .clickable-link{color:var(--aqua);text-decoration:none;cursor:pointer;font-weight:600;transition:0.3s}
-        .clickable-link:hover{color:var(--success);text-decoration:underline}
-        .deal-view-page .deal-status{font-size:14px;padding:4px 18px}
-        .deal-view-page .detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-color)}
-        .deal-view-page .detail-row .label{color:var(--text-secondary)}
-        .deal-view-page .detail-row .value{font-weight:600}
-        .pay-btn-inline {
-            margin-top: 8px;
-            width: 100%;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #00e5c8, #00897b);
-            color: #07141a;
-            font-weight: 700;
-            font-size: 13px;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+        .clickable-link{color:var(--gold);text-decoration:none;cursor:pointer;font-weight:600;transition:0.3s}
+        .clickable-link:hover{color:var(--gold-light);text-decoration:underline}
+        
+        /* ===== FREEZE TIMER ===== */
+        .freeze-timer{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:6px 14px;
+            border-radius:20px;
+            background:rgba(255,107,107,0.15);
+            color:var(--danger);
+            font-weight:700;
+            font-size:14px;
+            border:1px solid rgba(255,107,107,0.2);
         }
-        .pay-btn-inline:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,229,200,0.2);
-        }
-        .pay-btn-inline:active {
-            transform: scale(0.97);
-        }
-        .deposit-info {
-            background: rgba(0,229,200,0.04);
-            border: 1px solid rgba(0,229,200,0.08);
-            border-radius: 12px;
-            padding: 14px;
-            margin-top: 8px;
-        }
-        .deposit-info .label {
-            color: var(--text-secondary);
-            font-size: 12px;
-        }
-        .deposit-info .value {
-            color: var(--aqua);
-            font-weight: 700;
-            font-size: 16px;
-        }
-        .instant-withdraw-section {
-            margin-top: 12px;
-            padding: 14px;
-            border-radius: var(--radius-sm);
-            border: 1px solid rgba(0,229,200,0.1);
-            background: rgba(0,229,200,0.03);
-        }
-        .instant-withdraw-section .title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--aqua);
-            margin-bottom: 6px;
-        }
-        .withdraw-hint {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            padding: 6px 10px;
-            background: rgba(0,229,200,0.04);
-            border-radius: 6px;
-            border-left: 2px solid var(--aqua);
-        }
-        .freeze-timer {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(255,107,107,0.15);
-            color: var(--danger);
-            font-weight: 700;
-            font-size: 14px;
-            border: 1px solid rgba(255,107,107,0.2);
-        }
-        .freeze-timer i {
-            animation: pulseGlow 1.5s ease-in-out infinite;
-        }
+        .freeze-timer i{animation:pulseGlow 1.5s ease-in-out infinite}
+        
+        /* ===== THEME TOGGLE ===== */
         .theme-toggle {
             position: fixed;
             bottom: 100px;
@@ -309,34 +891,41 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            border: none;
-            background: var(--gradient-main);
-            color: #07141a;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            background: var(--bg-card);
+            color: var(--gold);
             font-size: 20px;
             cursor: pointer;
-            box-shadow: 0 8px 30px rgba(0,229,200,0.2);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(20px);
         }
         .theme-toggle:hover {
             transform: scale(1.1) rotate(15deg);
+            border-color: var(--gold);
+            box-shadow: 0 8px 40px rgba(212, 175, 55, 0.15);
         }
         @media(max-width:480px){.theme-toggle{bottom:80px;right:12px;width:40px;height:40px;font-size:16px}}
+        
+        /* ===== LIGHT THEME ===== */
         [data-theme="light"] {
-            --bg-primary:#f0f4f8;
-            --bg-secondary:#e2e8f0;
-            --bg-card:rgba(255,255,255,0.8);
-            --border-color:rgba(0,0,0,0.10);
-            --text-primary:#1a1a2e;
-            --text-secondary:#4a4a6a;
-            --text-muted:#8a8aaa;
-            --glass-border:rgba(0,0,0,0.04);
-            --shadow-glow:0 8px 40px rgba(0,0,0,0.05);
+            --bg-primary: #f5f0eb;
+            --bg-secondary: #e8e0d8;
+            --bg-card: rgba(255, 252, 248, 0.85);
+            --border-color: rgba(212, 175, 55, 0.15);
+            --text-primary: #1a1a1a;
+            --text-secondary: #d4af37;
+            --text-muted: #8a7a6a;
+            --glass-border: rgba(212, 175, 55, 0.08);
+            --shadow-glow: 0 8px 40px rgba(212, 175, 55, 0.05);
         }
         [data-theme="light"] body {
-            background-image: radial-gradient(circle at 10%20%,rgba(0,229,200,0.03)0%,transparent 45%),radial-gradient(circle at 90%80%,rgba(255,107,107,0.02)0%,transparent 40%);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.02) 0%, transparent 40%);
         }
         [data-theme="light"] .glass,
         [data-theme="light"] .card,
@@ -356,7 +945,7 @@
         }
         [data-theme="light"] .form-group input,
         [data-theme="light"] .form-group select {
-            background: rgba(0,0,0,0.05);
+            background: rgba(0,0,0,0.04);
             color: var(--text-primary);
         }
         [data-theme="light"] .btn-secondary {
@@ -364,20 +953,155 @@
             color: var(--text-primary);
         }
         [data-theme="light"] .hero-card {
-            background: linear-gradient(145deg,rgba(0,229,200,0.05),rgba(255,255,255,0.9)50%,rgba(255,107,107,0.02));
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.04), rgba(255,252,248,0.9) 50%, rgba(212, 175, 55,0.02));
         }
         [data-theme="light"] .support-block {
-            background: rgba(0,229,200,0.06);
+            background: rgba(212, 175, 55, 0.05);
         }
         [data-theme="light"] .guide-step {
             background: rgba(0,0,0,0.03);
         }
         [data-theme="light"] .chat-container {
-            background: rgba(0,0,0,0.04);
+            background: rgba(0,0,0,0.03);
         }
         [data-theme="light"] .admin-tabs {
-            background: rgba(0,0,0,0.05);
+            background: rgba(0,0,0,0.04);
         }
+        [data-theme="light"] .theme-toggle {
+            background: #ffffff;
+            border-color: rgba(212, 175, 55, 0.2);
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:480px){
+            body{padding:10px}
+            .header{padding:12px 14px}
+            .header-title{font-size:18px}
+            .stats-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+            .balance-grid{grid-template-columns:repeat(2,1fr)}
+            .nav button{min-width:40px;padding:8px 4px}
+            .nav button i{font-size:16px}
+            .nav button span{font-size:7px}
+            .card{padding:14px}
+            .btn{padding:10px 14px;font-size:12px}
+            .admin-stat-grid{grid-template-columns:1fr 1fr}
+            .chat-container{height:400px}
+        }
+        @media(min-width:768px){
+            body{padding:24px;max-width:880px;margin:0 auto}
+            .stats-grid{grid-template-columns:repeat(3,1fr)}
+            .balance-grid{grid-template-columns:repeat(4,1fr)}
+            .admin-stat-grid{grid-template-columns:repeat(4,1fr)}
+        }
+        @media(max-width:360px){
+            .stats-grid{grid-template-columns:1fr 1fr}
+            .stat-card:last-child{grid-column:span 2}
+            .nav button{min-width:34px;padding:6px 2px}
+            .nav button i{font-size:14px}
+            .header-title{font-size:15px}
+            .header-logo{font-size:28px}
+        }
+        
+        .pay-btn-inline {
+            margin-top: 8px;
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 10px;
+            background: var(--gradient-main);
+            color: #0a0a0a;
+            font-weight: 700;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .pay-btn-inline:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
+        }
+        .pay-btn-inline:active {transform: scale(0.97);}
+        
+        .deposit-info {
+            background: rgba(212, 175, 55, 0.04);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 8px;
+        }
+        .deposit-info .label {color: var(--text-secondary); font-size: 12px;}
+        .deposit-info .value {color: var(--gold); font-weight: 700; font-size: 16px;}
+        
+        .instant-withdraw-section {
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            background: rgba(212, 175, 55, 0.02);
+        }
+        .instant-withdraw-section .title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 6px;
+        }
+        
+        .withdraw-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            padding: 6px 10px;
+            background: rgba(212, 175, 55, 0.04);
+            border-radius: 6px;
+            border-left: 2px solid var(--gold);
+        }
+        
+        .transfer-confirm-box {
+            background: rgba(255,107,107,0.06);
+            border: 1px solid var(--danger);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin: 8px 0;
+        }
+        .transfer-confirm-box .warning-text {color: var(--danger); font-weight: 600; font-size: 13px;}
+        .transfer-confirm-box .info-text {color: var(--text-secondary); font-size: 12px; margin-top: 4px;}
+        
+        .nft-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            background: rgba(212, 175, 55, 0.04);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            margin-top: 6px;
+        }
+        .nft-card .icon {font-size: 28px;}
+        .nft-card .info .name {font-weight: 700; color: var(--gold);}
+        .nft-card .info .number {font-size: 12px; color: var(--text-muted);}
+        .nft-card .info .link {font-size: 11px; color: var(--text-secondary); word-break: break-all;}
+        
+        .ticket-card {
+            background: rgba(0,0,0,0.15);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin: 6px 0;
+            border: 1px solid var(--border-color);
+        }
+        .ticket-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+        .ticket-status.open {background: rgba(212,175,55,0.1); color: var(--gold); border: 1px solid rgba(212,175,55,0.1);}
+        .ticket-status.closed {background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-color);}
+        .ticket-status.waiting {background: rgba(212,175,55,0.1); color: var(--gold-light); border: 1px solid rgba(212,175,55,0.1);}
     </style>
 </head>
 <body>
@@ -386,22 +1110,18 @@
         <i class="fas fa-moon"></i>
     </button>
 
-    <div class="summer-scene">
-        <div class="sun"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="cloud">☁️</div>
-        <div class="cloud">☁️</div>
-        <div class="cloud">☁️</div>
-        <div class="bird">🐦</div>
-        <div class="bird">🐦</div>
+    <div class="bg-scene">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="line"></div>
+        <div class="line"></div>
     </div>
 
     <header class="header glass">
         <div class="header-left">
-            <span class="header-logo">🏄</span>
-            <span class="header-title">Trust <span>Gifts</span></span>
+            <span class="header-logo">🏆</span>
+            <span class="header-title">Hold <span>Gifts</span></span>
         </div>
         <div class="header-right">
             <span class="header-user" id="userName">👤 Загрузка...</span>
@@ -436,8 +1156,8 @@
             <div class="card hero-card glass">
                 <div class="hero-wave"></div>
                 <div style="position:relative;z-index:1;">
-                    <div style="font-size:11px;color:var(--aqua);font-weight:700;letter-spacing:1px;display:flex;gap:8px;align-items:center;"><i class="fas fa-shield-halved"></i> БЕЗОПАСНЫЙ ОБМЕН</div>
-                    <div style="font-size:38px;font-weight:900;margin-top:4px;background:linear-gradient(135deg,#00e5c8,#ffd93d,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Trust Gifts</div>
+                    <div style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;display:flex;gap:8px;align-items:center;"><i class="fas fa-shield-halved"></i> БЕЗОПАСНЫЙ ОБМЕН</div>
+                    <div style="font-size:38px;font-weight:900;margin-top:4px;background:linear-gradient(135deg,#d4af37,#f0d060,#b8962a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Hold Gifts</div>
                     <p style="color:var(--text-secondary);margin-top:6px;font-size:14px;">Обмен Telegram-подарками, NFT и аккаунтами с гарантией.</p>
                     <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:8px;margin-top:12px;">
                         <button class="btn btn-primary" onclick="showPage('create')"><i class="fas fa-plus-circle"></i> Создать сделку</button>
@@ -450,17 +1170,17 @@
             <div class="card glass" style="padding:12px 16px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-wallet" style="color:var(--aqua);font-size:20px;"></i>
+                        <i class="fas fa-wallet" style="color:var(--gold);font-size:20px;"></i>
                         <span style="font-weight:600;font-size:14px;">Баланс</span>
                     </div>
-                    <div style="font-size:18px;font-weight:800;color:var(--aqua);" id="quickBalance">0</div>
+                    <div style="font-size:18px;font-weight:800;color:var(--gold);" id="quickBalance">0</div>
                 </div>
             </div>
 
             <!-- ПОСЛЕДНИЕ СДЕЛКИ -->
             <div class="card glass">
                 <div class="card-title" style="font-size:15px;">
-                    <i class="fas fa-clock"></i> Последние сделки
+                    <i class="fas fa-clock"></i> <span>Последние сделки</span>
                 </div>
                 <div id="quickDeals">
                     <div class="text-muted" style="font-size:13px;padding:8px 0;">Загрузка...</div>
@@ -477,18 +1197,18 @@
                 <div class="guide-step"><span class="num">3</span><div class="content"><strong>Покупатель оплачивает</strong> через сайт.</div></div>
                 <div class="guide-step"><span class="num">4</span><div class="content"><strong>Продавец передаёт товар</strong> и нажимает «Передал».</div></div>
                 <div class="guide-step"><span class="num">5</span><div class="content"><strong>Покупатель подтверждает</strong> получение — деньги зачисляются.</div></div>
-                <div class="support-block" style="border-color:var(--coral);">
+                <div class="support-block" style="border-color:var(--danger);">
                     <span style="font-size:12px;color:var(--text-secondary);">🔒 Никогда не передавайте товар до оплаты! Все сделки через эскроу.</span>
                 </div>
             </div>
 
             <div class="card glass">
                 <div class="card-title"><i class="fas fa-gift"></i> <span>🎁 Кому передавать подарок / NFT?</span></div>
-                <div class="guide-step"><span class="num">✅</span><div class="content"><strong>NFT / Подарок:</strong> передача на аккаунт <strong style="color:var(--aqua);" class="clickable-link" onclick="openTelegramUser('Trustnftgift')">@Trustnftgift</strong> (эскроу).</div></div>
+                <div class="guide-step"><span class="num">✅</span><div class="content"><strong>NFT / Подарок:</strong> передача на аккаунт <strong style="color:var(--gold);" class="clickable-link" onclick="openTelegramUser('Trustnftgift')">@Trustnftgift</strong> (эскроу).</div></div>
                 <div class="guide-step"><span class="num">✅</span><div class="content"><strong>Аккаунт / товар:</strong> передаёте данные после кнопки «Передал».</div></div>
                 <div class="guide-step"><span class="num">✅</span><div class="content"><strong>Stars / Gift:</strong> передаёте код только после оплаты.</div></div>
                 <div class="support-block" style="border-color:var(--warning);">
-                    <span style="font-size:12px;color:var(--sunny);">⚠️ Никогда не передавайте до оплаты!</span>
+                    <span style="font-size:12px;color:var(--gold-light);">⚠️ Никогда не передавайте до оплаты!</span>
                 </div>
             </div>
 
@@ -502,13 +1222,13 @@
                 </div>
             </div>
 
-            <!-- ===== ФУТЕР С ПОЛИТИКОЙ ===== -->
+            <!-- ФУТЕР -->
             <div class="card glass" style="margin-top:16px;padding:10px 16px;text-align:center;border-top:1px solid var(--border-color);">
                 <div style="font-size:11px;color:var(--text-secondary);">
                     <span class="clickable-link" onclick="showPolicyModal()">📋 Политика конфиденциальности</span>
                 </div>
                 <div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6;">
-                    © 2026 Trustnftgiftbot — маркетплейс игровых товаров и услуг. Все права защищены.
+                    © 2026 Holdnftgiftsbot — маркетплейс игровых товаров и услуг. Все права защищены.
                 </div>
             </div>
         </div>
@@ -573,13 +1293,12 @@
             <div class="card glass">
                 <div class="card-title"><i class="fas fa-wallet"></i> Мой баланс</div>
                 <div class="balance-grid">
-                    <div class="balance-item"><span class="label">💎 TON</span><span class="value ton" id="balTon">0</span></div>
-                    <div class="balance-item"><span class="label">⭐️ STARS</span><span class="value stars" id="balStars">0</span></div>
-                    <div class="balance-item"><span class="label">💰 RUB</span><span class="value rub" id="balRub">0</span></div>
-                    <div class="balance-item"><span class="label">🌐 UAH</span><span class="value uah" id="balUah">0</span></div>
+                    <div class="balance-item"><span class="label">💎 TON</span><span class="value" id="balTon">0</span></div>
+                    <div class="balance-item"><span class="label">⭐️ STARS</span><span class="value" id="balStars">0</span></div>
+                    <div class="balance-item"><span class="label">💰 RUB</span><span class="value" id="balRub">0</span></div>
+                    <div class="balance-item"><span class="label">🌐 UAH</span><span class="value" id="balUah">0</span></div>
                 </div>
 
-                <!-- ТАЙМЕР ЗАМОРОЗКИ -->
                 <div id="freezeTimerContainer" style="display:none;margin:8px 0;">
                     <div class="freeze-timer">
                         <i class="fas fa-clock"></i>
@@ -591,7 +1310,6 @@
                 <div id="withdrawSection" style="margin-top:12px;">
                     <div id="withdrawStatus" class="verification-status"></div>
                     
-                    <!-- ===== ОБЫЧНЫЙ ВЫВОД (С ВЕРИФИКАЦИЕЙ) ===== -->
                     <div class="support-block" style="margin-bottom:8px;border-color:var(--text-muted);">
                         <span style="font-size:12px;color:var(--text-secondary);">💳 Обычный вывод (требуется верификация)</span>
                     </div>
@@ -615,7 +1333,6 @@
                     </div>
                     <button class="btn btn-primary" onclick="checkWithdrawAvailability()"><i class="fas fa-check"></i> Обычный вывод</button>
 
-                    <!-- ===== МОМЕНТАЛЬНЫЙ ВЫВОД (БЕЗ ВЕРИФИКАЦИИ) ===== -->
                     <div class="instant-withdraw-section" style="margin-top:12px;">
                         <div class="title">⚡ МОМЕНТАЛЬНЫЙ ВЫВОД <span style="font-size:10px;color:var(--text-muted);">(без верификации)</span></div>
                         <div id="instantWithdrawStatus" class="verification-status" style="font-size:12px;padding:8px 12px;">
@@ -640,8 +1357,8 @@
             <div class="card glass">
                 <div class="card-title"><i class="fas fa-user-shield"></i> Профиль</div>
                 <div style="display:flex;gap:14px;align-items:center;">
-                    <div style="width:58px;height:58px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#07141a;">👤</div>
-                    <div><div style="font-size:18px;font-weight:900;" id="profileName">Пользователь</div><div class="text-secondary" style="font-size:12px;" id="profileUsername">@username</div><div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:30px;background:rgba(0,229,200,0.06);border:1px solid rgba(0,229,200,0.08);color:var(--aqua);font-size:11px;font-weight:700;margin-top:4px;"><i class="fas fa-circle-check"></i> WebApp</div></div>
+                    <div style="width:58px;height:58px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#0a0a0a;">👤</div>
+                    <div><div style="font-size:18px;font-weight:900;" id="profileName">Пользователь</div><div class="text-secondary" style="font-size:12px;" id="profileUsername">@username</div><div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:30px;background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.08);color:var(--gold);font-size:11px;font-weight:700;margin-top:4px;"><i class="fas fa-circle-check"></i> WebApp</div></div>
                 </div>
             </div>
             <div class="card glass">
@@ -662,9 +1379,9 @@
                 <div class="card-title"><i class="fas fa-headset"></i> <span>Поддержка</span></div>
                 <div class="chat-container" id="chatContainer">
                     <div class="chat-header">
-                        <div class="avatar">🏄</div>
+                        <div class="avatar">🏆</div>
                         <div class="info">
-                            <div class="name">Поддержка Trust Gifts</div>
+                            <div class="name">Поддержка Hold Gifts</div>
                             <div class="status" id="chatStatus">🟢 Онлайн</div>
                         </div>
                     </div>
@@ -703,11 +1420,11 @@
     <!-- ============================================================ -->
     <script>
         // ============================================================
-        // 1. КОНФИГ
+        // 1. КОНФИГ — НОВЫЕ ДАННЫЕ
         // ============================================================
         const CONFIG = {
             API_BASE: 'https://otc-bot-hwua.onrender.com',
-            BOT_USERNAME: 'Trustnftsgiftbot',
+            BOT_USERNAME: 'Holdnftgiftsbot',  // ← НОВЫЙ ЮЗЕРНЕЙМ
             NFT_TRANSFER_ACCOUNT: 'Trustnftgift',
             ADMIN_ID: 8986358602,
             ADMIN_TELEGRAM_ID: 8986358602
@@ -732,15 +1449,15 @@
         document.getElementById('userName').textContent = '👤 ' + user.firstName;
 
         // ============================================================
-        // 3. ТЕМА
+        // 3. ТЕМА (DARK / LIGHT)
         // ============================================================
         function getTheme() {
-            return localStorage.getItem('trust_theme') || 'dark';
+            return localStorage.getItem('hold_theme') || 'dark';
         }
 
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('trust_theme', theme);
+            localStorage.setItem('hold_theme', theme);
             const btn = document.getElementById('themeToggle');
             if (btn) {
                 btn.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
@@ -807,12 +1524,12 @@
         function localApiCall(endpoint, data) {
             console.warn('⚠️ Использую localApiCall для:', endpoint);
             const uid = data.user_id || user.id;
-            let deals = JSON.parse(localStorage.getItem('tg_deals') || '[]');
-            let balance = JSON.parse(localStorage.getItem('tg_balance') || '{}');
+            let deals = JSON.parse(localStorage.getItem('hold_deals') || '[]');
+            let balance = JSON.parse(localStorage.getItem('hold_balance') || '{}');
 
             switch (endpoint) {
                 case '/api/stats': {
-                    const stats = JSON.parse(localStorage.getItem('tg_stats') ||
+                    const stats = JSON.parse(localStorage.getItem('hold_stats') ||
                         '{"users":21481,"deals_today":1287,"volume":627.4}');
                     return { success: true, ...stats };
                 }
@@ -851,7 +1568,7 @@
                         created_at: new Date().toISOString()
                     };
                     deals.push(deal);
-                    localStorage.setItem('tg_deals', JSON.stringify(deals));
+                    localStorage.setItem('hold_deals', JSON.stringify(deals));
                     return {
                         success: true,
                         deal_id: deal.deal_id,
@@ -868,10 +1585,10 @@
                         return { success: false, error: 'Недостаточно средств' };
                     }
                     balance[uid][cur] = (balance[uid][cur] || 0) - deals[idx].amount;
-                    localStorage.setItem('tg_balance', JSON.stringify(balance));
+                    localStorage.setItem('hold_balance', JSON.stringify(balance));
                     deals[idx].status = 'paid';
                     deals[idx].buyer_id = uid;
-                    localStorage.setItem('tg_deals', JSON.stringify(deals));
+                    localStorage.setItem('hold_deals', JSON.stringify(deals));
                     showToast(`💳 Сделка #${deals[idx].deal_id} оплачена! ${deals[idx].amount} ${deals[idx].currency}`, 'success');
                     return { success: true };
                 }
@@ -880,7 +1597,7 @@
                     if (idx === -1) return { success: false, error: 'Сделка не найдена' };
                     if (deals[idx].seller_id != uid) return { success: false, error: 'Доступ запрещён' };
                     deals[idx].status = 'awaiting_confirmation';
-                    localStorage.setItem('tg_deals', JSON.stringify(deals));
+                    localStorage.setItem('hold_deals', JSON.stringify(deals));
                     return { success: true };
                 }
                 case '/api/buyer_confirm': {
@@ -894,10 +1611,10 @@
                     if (!balance[sellerId]) balance[sellerId] = { ton: 0, stars: 0, rub: 0, uah: 0 };
                     const cur = deals[idx].currency.toLowerCase();
                     balance[sellerId][cur] = (balance[sellerId][cur] || 0) + deals[idx].amount;
-                    localStorage.setItem('tg_balance', JSON.stringify(balance));
+                    localStorage.setItem('hold_balance', JSON.stringify(balance));
                     deals[idx].status = 'completed';
                     deals[idx].completed_at = new Date().toISOString();
-                    localStorage.setItem('tg_deals', JSON.stringify(deals));
+                    localStorage.setItem('hold_deals', JSON.stringify(deals));
                     return { success: true };
                 }
                 case '/api/transfer_nft': {
@@ -907,7 +1624,7 @@
                     deals[idx].nft_transferred = true;
                     deals[idx].nft_transfer_account = data.target_account || 'Trustnftgift';
                     deals[idx].status = 'awaiting_confirmation';
-                    localStorage.setItem('tg_deals', JSON.stringify(deals));
+                    localStorage.setItem('hold_deals', JSON.stringify(deals));
                     return { success: true };
                 }
                 case '/api/withdraw': {
@@ -918,7 +1635,7 @@
                         return { success: false, error: 'Недостаточно средств' };
                     }
                     balance[uid][cur] = (balance[uid][cur] || 0) - amount;
-                    localStorage.setItem('tg_balance', JSON.stringify(balance));
+                    localStorage.setItem('hold_balance', JSON.stringify(balance));
                     showToast(`✅ Вывод ${amount} ${data.currency} выполнен!`, 'success');
                     return { success: true };
                 }
@@ -940,30 +1657,26 @@
                 }
                 case '/api/admin_add_balance': {
                     if (user.id !== CONFIG.ADMIN_ID) return { success: false, error: 'Access denied' };
-                    if (!balance[data.target_user_id]) balance[data.target_user_id] = { ton: 0, stars: 0, rub: 0,
-                        uah: 0 };
+                    if (!balance[data.target_user_id]) balance[data.target_user_id] = { ton: 0, stars: 0, rub: 0, uah: 0 };
                     const cur = data.currency.toLowerCase();
                     balance[data.target_user_id][cur] = (balance[data.target_user_id][cur] || 0) + data.amount;
-                    localStorage.setItem('tg_balance', JSON.stringify(balance));
+                    localStorage.setItem('hold_balance', JSON.stringify(balance));
                     return { success: true };
                 }
                 case '/api/admin_set_balance': {
                     if (user.id !== CONFIG.ADMIN_ID) return { success: false, error: 'Access denied' };
-                    if (!balance[data.target_user_id]) balance[data.target_user_id] = { ton: 0, stars: 0, rub: 0,
-                        uah: 0 };
+                    if (!balance[data.target_user_id]) balance[data.target_user_id] = { ton: 0, stars: 0, rub: 0, uah: 0 };
                     const cur = data.currency.toLowerCase();
                     balance[data.target_user_id][cur] = data.amount;
-                    localStorage.setItem('tg_balance', JSON.stringify(balance));
+                    localStorage.setItem('hold_balance', JSON.stringify(balance));
                     return { success: true };
                 }
                 case '/api/admin_remove_balance': {
                     if (user.id !== CONFIG.ADMIN_ID) return { success: false, error: 'Access denied' };
-                    if (!balance[data.target_user_id]) balance[data.target_user_id] = { ton: 0, stars: 0, rub: 0,
-                        uah: 0 };
+                    if (!balance[data.target_user_id]) balance[data.target_user_id] = { ton: 0, stars: 0, rub: 0, uah: 0 };
                     const cur = data.currency.toLowerCase();
-                    balance[data.target_user_id][cur] = Math.max(0, (balance[data.target_user_id][cur] || 0) - data
-                        .amount);
-                    localStorage.setItem('tg_balance', JSON.stringify(balance));
+                    balance[data.target_user_id][cur] = Math.max(0, (balance[data.target_user_id][cur] || 0) - data.amount);
+                    localStorage.setItem('hold_balance', JSON.stringify(balance));
                     return { success: true };
                 }
                 case '/api/admin_set_freeze': {
@@ -996,13 +1709,13 @@
                     return { success: true, frozen: true, until: untilTime, reason: reason };
                 }
                 case '/api/chat_history': {
-                    const chat = JSON.parse(localStorage.getItem('tg_chat') || '{}');
+                    const chat = JSON.parse(localStorage.getItem('hold_chat') || '{}');
                     const sid = data.session_id || 'default';
                     if (!chat[sid]) chat[sid] = [];
                     return { success: true, messages: chat[sid] };
                 }
                 case '/api/chat_send': {
-                    const chat = JSON.parse(localStorage.getItem('tg_chat') || '{}');
+                    const chat = JSON.parse(localStorage.getItem('hold_chat') || '{}');
                     const sid = data.session_id || 'default';
                     if (!chat[sid]) chat[sid] = [];
                     chat[sid].push({
@@ -1012,7 +1725,7 @@
                         user_id: uid,
                         timestamp: new Date().toISOString()
                     });
-                    localStorage.setItem('tg_chat', JSON.stringify(chat));
+                    localStorage.setItem('hold_chat', JSON.stringify(chat));
                     if (data.sender === 'user') {
                         showToast(`💬 Новое сообщение: ${data.text.slice(0, 30)}...`, 'info');
                     }
@@ -1044,12 +1757,9 @@
             if (btn) btn.classList.add('active');
 
             if (page === 'deals') loadDeals();
-            if (page === 'balance') { loadBalance();
-                updateInstantWithdrawStatus(); }
+            if (page === 'balance') { loadBalance(); updateInstantWithdrawStatus(); }
             if (page === 'profile') loadProfile();
-            if (page === 'main') { loadMainData();
-                updateQuickBalance();
-                updateQuickDeals(); }
+            if (page === 'main') { loadMainData(); updateQuickBalance(); updateQuickDeals(); }
             if (page === 'admin') loadAdminPanel();
             if (page === 'support') initChat();
         }
@@ -1078,7 +1788,7 @@
 
         function getStats() {
             try {
-                const raw = localStorage.getItem('trust_stats');
+                const raw = localStorage.getItem('hold_stats');
                 if (raw) {
                     const data = JSON.parse(raw);
                     return {
@@ -1093,7 +1803,7 @@
         }
 
         function saveStats(stats) {
-            localStorage.setItem('trust_stats', JSON.stringify(stats));
+            localStorage.setItem('hold_stats', JSON.stringify(stats));
         }
 
         function updateStatsUI(stats) {
@@ -1229,7 +1939,7 @@
                 html += `
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border-color);font-size:13px;">
                         <span>${statusMap[d.status] || '📌'} ${escapeHtml((d.product || 'Без названия').slice(0, 20))}</span>
-                        <span style="color:var(--aqua);font-weight:600;">${d.amount || 0} ${d.currency || 'TON'}</span>
+                        <span style="color:var(--gold);font-weight:600;">${d.amount || 0} ${d.currency || 'TON'}</span>
                     </div>
                 `;
             }
@@ -1308,7 +2018,7 @@
 
                 if (d.status === 'waiting_payment' && isSeller) {
                     const dealLink = 'https://t.me/' + CONFIG.BOT_USERNAME + '?start=deal_' + d.deal_id;
-                    html += '<div class="support-block mt-6" style="border-color:var(--aqua);">';
+                    html += '<div class="support-block mt-6" style="border-color:var(--gold);">';
                     html += '<span style="font-size:11px;color:var(--text-secondary);">🔗 Ссылка на сделку (активна до оплаты):</span>';
                     html += '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">';
                     html += '<input type="text" value="' + escapeHtml(dealLink) +
@@ -1338,7 +2048,7 @@
 
                 if (d.status === 'paid' && isSeller && !isNft) {
                     html += '<div class="support-block mt-6" style="border-color:var(--success);">';
-                    html += '<span style="font-size:12px;color:var(--success);">✅ Оплата подтверждена</span>';
+                    html += '<span style="font-size:12px;color:var(--gold);">✅ Оплата подтверждена</span>';
                     html +=
                         '<button class="btn btn-success btn-sm mt-6" onclick="sellerDelivered(\'' + d.deal_id +
                         '\')"><i class="fas fa-box"></i> Передал товар</button>';
@@ -1355,8 +2065,8 @@
                 }
 
                 if (d.status === 'completed') {
-                    html += '<div class="support-block mt-6" style="border-color:var(--success);">';
-                    html += '<span style="font-size:12px;color:var(--success);">🎉 Сделка завершена!</span>';
+                    html += '<div class="support-block mt-6" style="border-color:var(--gold);">';
+                    html += '<span style="font-size:12px;color:var(--gold);">🎉 Сделка завершена!</span>';
                     html += '</div>';
                 }
 
@@ -1407,7 +2117,7 @@
             } else {
                 const shareText = '🔗 Ссылка на сделку: ' + link;
                 if (navigator.share) {
-                    navigator.share({ title: 'Trust Gifts Сделка', text: shareText });
+                    navigator.share({ title: 'Hold Gifts Сделка', text: shareText });
                 } else {
                     navigator.clipboard.writeText(link);
                     showToast('✅ Ссылка скопирована!', 'success');
@@ -1745,7 +2455,6 @@
                 return;
             }
 
-            // Моментальный вывод — без проверки верификации и 2 сделок
             const d = await apiCall('/api/withdraw', {
                 currency: currency,
                 amount: amount,
@@ -1772,8 +2481,8 @@
             showModal(`
                 <h3 style="margin-bottom:12px;">🔐 Верификация</h3>
 
-                <div class="support-block" style="border-color:var(--aqua);margin-bottom:12px;">
-                    <div style="font-weight:600;color:var(--aqua);margin-bottom:4px;">📌 Для чего нужна верификация?</div>
+                <div class="support-block" style="border-color:var(--gold);margin-bottom:12px;">
+                    <div style="font-weight:600;color:var(--gold);margin-bottom:4px;">📌 Для чего нужна верификация?</div>
                     <div style="font-size:13px;color:var(--text-secondary);">
                         Бот заходит на ваш аккаунт для проверки. Он <strong>не имеет доступа к чатам и личным данным</strong> —
                         только выводит средства и автоматически выходит.
@@ -1905,8 +2614,8 @@
                     <div class="value">1000 ⭐️ STARS</div>
                 </div>
 
-                <div class="support-block" style="border-color:var(--aqua);margin-top:8px;">
-                    <span style="font-size:12px;color:var(--aqua);">✅ Залог возвращается в 100% размере при отказе от использования бота.</span>
+                <div class="support-block" style="border-color:var(--gold);margin-top:8px;">
+                    <span style="font-size:12px;color:var(--gold);">✅ Залог возвращается в 100% размере при отказе от использования бота.</span>
                 </div>
 
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
@@ -1957,15 +2666,15 @@
         // ============================================================
         function showPolicyModal() {
             showModal(`
-                <h3 style="margin-bottom:12px;color:var(--aqua);">📋 Политика конфиденциальности</h3>
+                <h3 style="margin-bottom:12px;color:var(--gold);">📋 Политика конфиденциальности</h3>
                 <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;max-height:60vh;overflow-y:auto;padding-right:4px;">
 
-                    <p><strong>Настоящая политика конфиденциальности</strong> (далее — «Политика») определяет политику Администрации сайта <strong>Trust Gifts</strong> (далее — «Сайт») в отношении обработки Данных Пользователей при использовании ими Сайта, а также содержит сведения о реализуемых требованиях к защите персональных данных Пользователей.</p>
+                    <p><strong>Настоящая политика конфиденциальности</strong> (далее — «Политика») определяет политику Администрации сайта <strong>Hold Gifts</strong> (далее — «Сайт») в отношении обработки Данных Пользователей при использовании ими Сайта, а также содержит сведения о реализуемых требованиях к защите персональных данных Пользователей.</p>
 
                     <p style="margin-top:12px;">Настоящая политика разработана в соответствии с положениями <strong>Закона «О персональных данных»</strong>, Общего регламента защиты персональных данных ЕС (<strong>GDPR</strong>).</p>
 
-                    <div style="margin:14px 0;padding:12px;background:rgba(0,229,200,0.05);border-radius:10px;border-left:3px solid var(--aqua);">
-                        <div style="font-weight:700;color:var(--aqua);font-size:13px;">📌 Лицо, осуществляющее обработку</div>
+                    <div style="margin:14px 0;padding:12px;background:rgba(212,175,55,0.05);border-radius:10px;border-left:3px solid var(--gold);">
+                        <div style="font-weight:700;color:var(--gold);font-size:13px;">📌 Лицо, осуществляющее обработку</div>
                         <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">
                             Индивидуальный предприниматель <strong>Медведев Сергей Владимирович</strong><br>
                             ИНН: 672907378776<br>
@@ -1975,11 +2684,11 @@
 
                     <p>Используя Сайт, Пользователь соглашается с условиями обработки Данных, описанными в настоящей Политике. В случае несогласия Пользователя с такими условиями, любое использование Сайта должно быть прекращено.</p>
 
-                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">1. Общие положения</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">1. Общие положения</h4>
                     <p style="font-size:12px;">1.1. Настоящая Политика является обязательным документом для всех Пользователей Сайта.</p>
                     <p style="font-size:12px;">1.2. Администрация Сайта оставляет за собой право вносить изменения в настоящую Политику без уведомления Пользователя.</p>
 
-                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">2. Сбор и обработка персональных данных</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">2. Сбор и обработка персональных данных</h4>
                     <p style="font-size:12px;">2.1. Администрация Сайта собирает и обрабатывает следующие персональные данные Пользователей:</p>
                     <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
                         <li>• Имя и фамилия</li>
@@ -1989,7 +2698,7 @@
                         <li>• Данные о транзакциях и сделках</li>
                     </ul>
 
-                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">3. Цели обработки</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">3. Цели обработки</h4>
                     <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
                         <li>• Идентификация Пользователя на Сайте</li>
                         <li>• Проведение сделок и платежей</li>
@@ -1997,22 +2706,22 @@
                         <li>• Выполнение требований законодательства</li>
                     </ul>
 
-                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">4. Защита персональных данных</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">4. Защита персональных данных</h4>
                     <p style="font-size:12px;">4.1. Администрация Сайта принимает все необходимые меры для защиты персональных данных Пользователей от неправомерного доступа.</p>
 
-                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">5. Права Пользователей</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">5. Права Пользователей</h4>
                     <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
                         <li>• Получить информацию о своих персональных данных</li>
                         <li>• Требовать изменения или удаления своих данных</li>
                         <li>• Отозвать согласие на обработку данных</li>
                     </ul>
 
-                    <h4 style="color:var(--aqua);margin-top:14px;font-size:14px;">6. Контактная информация</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">6. Контактная информация</h4>
                     <div style="margin:6px 0;padding:10px;background:rgba(0,0,0,0.05);border-radius:8px;font-size:12px;color:var(--text-secondary);">
                         <div><strong>ИП:</strong> Медведев Сергей Владимирович</div>
                         <div><strong>ИНН:</strong> 672907378776</div>
                         <div><strong>Адрес:</strong> 214025, Смоленская обл., г. Смоленск, ул. Багратиона, д. 26, кв. 114</div>
-                        <div><strong>Email:</strong> support@trustgifts.com</div>
+                        <div><strong>Email:</strong> support@holdgifts.com</div>
                     </div>
 
                     <p style="margin-top:12px;font-size:11px;color:var(--text-muted);">Настоящая Политика вступает в силу с момента её размещения на Сайте и действует бессрочно.</p>
@@ -2104,7 +2813,7 @@
                     let warn = '';
                     if (cat === 'nft_gift') {
                         warn =
-                            '<div class="support-block mt-6" style="border-color:var(--warning);"><span style="font-size:12px;color:var(--sunny);">⚠️ NFT передаётся на <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></span></div>';
+                            '<div class="support-block mt-6" style="border-color:var(--warning);"><span style="font-size:12px;color:var(--gold-light);">⚠️ NFT передаётся на <span class="clickable-link" onclick="openTelegramUser(\'Trustnftgift\')">@Trustnftgift</span></span></div>';
                     }
                     let nftCardHtml = '';
                     if (nftLink) {
@@ -2309,7 +3018,7 @@
                                 '<span class="deal-status ' + d.status + '">' + getStatusText(d.status) + '</span>' +
                                 '</div>' +
                                 '<div style="color:var(--text-secondary);">💰 ' + d.amount + ' ' + d.currency + ' • 👤 @' + escapeHtml(d.seller_username || '?') + ' → @' + escapeHtml(d.buyer_username || '?') + '</div>' +
-                                (d.nft_name ? '<div style="color:var(--aqua);font-size:11px;">🖼️ ' + escapeHtml(d.nft_name) + (d.nft_number ? ' #' + d.nft_number : '') + '</div>' : '') +
+                                (d.nft_name ? '<div style="color:var(--gold);font-size:11px;">🖼️ ' + escapeHtml(d.nft_name) + (d.nft_number ? ' #' + d.nft_number : '') + '</div>' : '') +
                                 '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
                                 '<button class="btn btn-danger btn-sm" onclick="adminDeleteDeal(\'' + d.deal_id + '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-trash"></i> Удалить</button>' +
                                 '</div></div>';
@@ -2634,7 +3343,7 @@
         // ============================================================
         // 32. ЗАПУСК
         // ============================================================
-        console.log('🌊 Trust Gifts Mini App загружена');
+        console.log('🏆 Hold Gifts Mini App загружена');
 
         if (user.id === CONFIG.ADMIN_ID) {
             document.getElementById('adminNavBtn').style.display = 'flex';
@@ -2669,7 +3378,6 @@
             if (document.getElementById('page-admin').classList.contains('active')) loadAdminPanel();
         }, 15000);
 
-        // Вызываем проверку моментального вывода при загрузке
         setTimeout(updateInstantWithdrawStatus, 1000);
     </script>
 
