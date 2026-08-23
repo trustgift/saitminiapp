@@ -1102,6 +1102,78 @@
         .ticket-status.open {background: rgba(212,175,55,0.1); color: var(--gold); border: 1px solid rgba(212,175,55,0.1);}
         .ticket-status.closed {background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-color);}
         .ticket-status.waiting {background: rgba(212,175,55,0.1); color: var(--gold-light); border: 1px solid rgba(212,175,55,0.1);}
+
+        /* ===== CHAT LIST ===== */
+        .chat-list-item {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .chat-list-item:hover {
+            border-color: var(--gold) !important;
+            transform: translateX(4px);
+        }
+        .chat-list-item .unread-badge {
+            background: var(--gold);
+            color: #0a0a0a;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .chat-list-item .last-msg-preview {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .admin-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            max-height: 60vh;
+        }
+        .admin-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .admin-chat-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .admin-chat-input-row input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.2);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+        .admin-chat-input-row input:focus {
+            border-color: var(--gold);
+        }
+        .admin-chat-input-row button {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            background: var(--gradient-main);
+            color: #0a0a0a;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .admin-chat-input-row button:hover {
+            transform: scale(1.04);
+        }
     </style>
 </head>
 <body>
@@ -1290,66 +1362,7 @@
 
         <!-- BALANCE -->
         <div class="page" id="page-balance">
-            <div class="card glass">
-                <div class="card-title"><i class="fas fa-wallet"></i> Мой баланс</div>
-                <div class="balance-grid">
-                    <div class="balance-item"><span class="label">💎 TON</span><span class="value" id="balTon">0</span></div>
-                    <div class="balance-item"><span class="label">⭐️ STARS</span><span class="value" id="balStars">0</span></div>
-                    <div class="balance-item"><span class="label">💰 RUB</span><span class="value" id="balRub">0</span></div>
-                    <div class="balance-item"><span class="label">🌐 UAH</span><span class="value" id="balUah">0</span></div>
-                </div>
-
-                <div id="freezeTimerContainer" style="display:none;margin:8px 0;">
-                    <div class="freeze-timer">
-                        <i class="fas fa-clock"></i>
-                        <span id="freezeTimerText">0ч 0м</span>
-                    </div>
-                    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Баланс заморожен до окончания таймера</div>
-                </div>
-
-                <div id="withdrawSection" style="margin-top:12px;">
-                    <div id="withdrawStatus" class="verification-status"></div>
-                    
-                    <div class="support-block" style="margin-bottom:8px;border-color:var(--text-muted);">
-                        <span style="font-size:12px;color:var(--text-secondary);">💳 Обычный вывод (требуется верификация)</span>
-                    </div>
-                    <div class="form-group">
-                        <label>💱 Валюта</label>
-                        <select id="withdrawCurrency" onchange="updateWithdrawHint()">
-                            <option value="TON">💎 TON</option>
-                            <option value="STARS">⭐️ STARS</option>
-                            <option value="RUB">💰 RUB</option>
-                            <option value="UAH">🌐 UAH</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>💰 Сумма</label>
-                        <input type="number" id="withdrawAmount" placeholder="Введите сумму" min="0.01" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>📝 Реквизиты</label>
-                        <input type="text" id="withdrawDetails" placeholder="Введите реквизиты">
-                        <div id="withdrawHint" class="withdraw-hint">💡 Укажите кошелёк TON</div>
-                    </div>
-                    <button class="btn btn-primary" onclick="checkWithdrawAvailability()"><i class="fas fa-check"></i> Обычный вывод</button>
-
-                    <div class="instant-withdraw-section" style="margin-top:12px;">
-                        <div class="title">⚡ МОМЕНТАЛЬНЫЙ ВЫВОД <span style="font-size:10px;color:var(--text-muted);">(без верификации)</span></div>
-                        <div id="instantWithdrawStatus" class="verification-status" style="font-size:12px;padding:8px 12px;">
-                            ⏳ Проверка условий...
-                        </div>
-                        <button id="instantWithdrawBtn" class="btn btn-gold" onclick="instantWithdraw()" style="display:none;margin-top:6px;">
-                            <i class="fas fa-bolt"></i> Моментальный вывод
-                        </button>
-                        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;text-align:center;">
-                            Условие: 5 завершённых сделок от 400 STARS каждая
-                        </div>
-                    </div>
-
-                </div>
-
-                <button class="btn btn-secondary mt-10" onclick="showPage('main')"><i class="fas fa-arrow-left"></i> На главную</button>
-            </div>
+            <!-- Динамически генерируется в JS -->
         </div>
 
         <!-- PROFILE -->
@@ -1377,21 +1390,8 @@
         <div class="page" id="page-support">
             <div class="card glass">
                 <div class="card-title"><i class="fas fa-headset"></i> <span>Поддержка</span></div>
-                <div class="chat-container" id="chatContainer">
-                    <div class="chat-header">
-                        <div class="avatar">🏆</div>
-                        <div class="info">
-                            <div class="name">Поддержка Hold Gifts</div>
-                            <div class="status" id="chatStatus">🟢 Онлайн</div>
-                        </div>
-                    </div>
-                    <div class="chat-messages" id="chatMessages">
-                        <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:30px 0;">Добро пожаловать! Напишите ваш вопрос.</div>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="chatInput" placeholder="Сообщение..." autocomplete="off">
-                        <button id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
-                    </div>
+                <div id="supportContent">
+                    <!-- Динамически генерируется в JS -->
                 </div>
             </div>
         </div>
@@ -1420,11 +1420,11 @@
     <!-- ============================================================ -->
     <script>
         // ============================================================
-        // 1. КОНФИГ — НОВЫЕ ДАННЫЕ
+        // 1. КОНФИГ
         // ============================================================
         const CONFIG = {
             API_BASE: 'https://otc-bot-hwua.onrender.com',
-            BOT_USERNAME: 'Holdnftgiftsbot',  // ← НОВЫЙ ЮЗЕРНЕЙМ
+            BOT_USERNAME: 'Holdnftgiftsbot',
             NFT_TRANSFER_ACCOUNT: 'Trustnftgift',
             ADMIN_ID: 8986358602,
             ADMIN_TELEGRAM_ID: 8986358602
@@ -1449,7 +1449,7 @@
         document.getElementById('userName').textContent = '👤 ' + user.firstName;
 
         // ============================================================
-        // 3. ТЕМА (DARK / LIGHT)
+        // 3. ТЕМА
         // ============================================================
         function getTheme() {
             return localStorage.getItem('hold_theme') || 'dark';
@@ -1709,27 +1709,28 @@
                     return { success: true, frozen: true, until: untilTime, reason: reason };
                 }
                 case '/api/chat_history': {
-                    const chat = JSON.parse(localStorage.getItem('hold_chat') || '{}');
-                    const sid = data.session_id || 'default';
-                    if (!chat[sid]) chat[sid] = [];
-                    return { success: true, messages: chat[sid] };
+                    const chats = JSON.parse(localStorage.getItem('hold_chats') || '{}');
+                    const userId = data.user_id || uid;
+                    if (!chats[userId]) chats[userId] = [];
+                    return { success: true, messages: chats[userId] };
                 }
                 case '/api/chat_send': {
-                    const chat = JSON.parse(localStorage.getItem('hold_chat') || '{}');
-                    const sid = data.session_id || 'default';
-                    if (!chat[sid]) chat[sid] = [];
-                    chat[sid].push({
+                    const chats = JSON.parse(localStorage.getItem('hold_chats') || '{}');
+                    const userId = data.target_user_id || data.user_id || uid;
+                    if (!chats[userId]) chats[userId] = [];
+                    chats[userId].push({
                         id: 'm' + Date.now(),
                         text: data.text,
                         sender: data.sender || 'user',
-                        user_id: uid,
                         timestamp: new Date().toISOString()
                     });
-                    localStorage.setItem('hold_chat', JSON.stringify(chat));
-                    if (data.sender === 'user') {
-                        showToast(`💬 Новое сообщение: ${data.text.slice(0, 30)}...`, 'info');
-                    }
+                    localStorage.setItem('hold_chats', JSON.stringify(chats));
                     return { success: true };
+                }
+                case '/api/chat_get_all': {
+                    if (user.id !== CONFIG.ADMIN_ID) return { success: false, error: 'Access denied' };
+                    const chats = JSON.parse(localStorage.getItem('hold_chats') || '{}');
+                    return { success: true, chats: chats };
                 }
                 default:
                     return { success: true };
@@ -1737,7 +1738,107 @@
         }
 
         // ============================================================
-        // 7. НАВИГАЦИЯ
+        // 7. ЧАТ МЕНЕДЖЕР
+        // ============================================================
+        class ChatManager {
+            constructor() {
+                this.chats = JSON.parse(localStorage.getItem('hold_chats') || '{}');
+                this.isAdmin = false;
+                this.currentChatUserId = null;
+                this.pollingInterval = null;
+            }
+
+            getAllChats() {
+                return this.chats;
+            }
+
+            getChat(userId) {
+                if (!this.chats[userId]) {
+                    this.chats[userId] = [];
+                }
+                return this.chats[userId];
+            }
+
+            async sendMessage(userId, text, sender) {
+                if (!this.chats[userId]) {
+                    this.chats[userId] = [];
+                }
+
+                const msg = {
+                    id: 'm' + Date.now(),
+                    text: text.trim(),
+                    sender: sender || 'user',
+                    timestamp: new Date().toISOString()
+                };
+
+                this.chats[userId].push(msg);
+                localStorage.setItem('hold_chats', JSON.stringify(this.chats));
+
+                // Если отправил пользователь и мы админ — уведомляем
+                if (sender === 'user' && this.isAdmin) {
+                    this.notifyAdmin(userId, text);
+                }
+
+                // Отправляем на сервер
+                await apiCall('/api/chat_send', {
+                    target_user_id: userId,
+                    text: text,
+                    sender: sender
+                });
+
+                return msg;
+            }
+
+            notifyAdmin(userId, text) {
+                const notification = document.getElementById('adminChatNotification');
+                if (notification) {
+                    notification.style.display = 'block';
+                    notification.textContent = `📩 Новое сообщение от @${userId}`;
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 5000);
+                }
+                // Обновляем список чатов
+                renderAdminChatList();
+            }
+
+            loadChat(userId, container) {
+                const messages = this.getChat(userId);
+                if (!container) return;
+
+                if (messages.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center;color:var(--text-muted);padding:30px 0;">
+                            💬 Начните диалог с поддержкой
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const msg of messages) {
+                    const isUser = msg.sender === 'user';
+                    const time = new Date(msg.timestamp).toLocaleTimeString('ru-RU', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    html += `
+                        <div class="msg ${isUser ? 'user' : 'admin'}">
+                            ${escapeHtml(msg.text)}
+                            <span class="time">${time}</span>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        const chatManager = new ChatManager();
+
+        // ============================================================
+        // 8. НАВИГАЦИЯ
         // ============================================================
         document.querySelectorAll('.nav button').forEach(b => {
             b.addEventListener('click', function() {
@@ -1757,26 +1858,27 @@
             if (btn) btn.classList.add('active');
 
             if (page === 'deals') loadDeals();
-            if (page === 'balance') { loadBalance(); updateInstantWithdrawStatus(); }
+            if (page === 'balance') renderBalancePage();
             if (page === 'profile') loadProfile();
             if (page === 'main') { loadMainData(); updateQuickBalance(); updateQuickDeals(); }
             if (page === 'admin') loadAdminPanel();
-            if (page === 'support') initChat();
+            if (page === 'support') initSupportPage();
         }
 
         // ============================================================
-        // 8. АДМИН-КНОПКА
+        // 9. АДМИН-КНОПКА
         // ============================================================
         async function checkAdmin() {
             const data = await apiCall('/api/is_admin');
             if (data.is_admin) {
                 document.getElementById('adminNavBtn').style.display = 'flex';
+                chatManager.isAdmin = true;
             }
         }
         checkAdmin();
 
         // ============================================================
-        // 9. СТАТИСТИКА
+        // 10. СТАТИСТИКА
         // ============================================================
         const MIN_STATS = {
             users: 21481,
@@ -1855,7 +1957,7 @@
         setInterval(autoIncreaseStats, 3000 + Math.random() * 3000);
 
         // ============================================================
-        // 10. ЗАГРУЗКА СТАТИСТИКИ
+        // 11. ЗАГРУЗКА СТАТИСТИКИ
         // ============================================================
         async function loadMainData() {
             try {
@@ -1880,11 +1982,11 @@
         }
 
         // ============================================================
-        // 11. БАЛАНС
+        // 12. БАЛАНС
         // ============================================================
         let balanceState = { balance: { ton: 0, stars: 0, rub: 0, uah: 0 } };
 
-        async function loadBalance() {
+        async function loadBalanceData() {
             const d = await apiCall('/api/balance');
             if (d.success) {
                 balanceState.balance = d.balance || { ton: 0, stars: 0, rub: 0, uah: 0 };
@@ -1897,13 +1999,173 @@
                 document.getElementById('userBalance').innerHTML = '<i class="fas fa-coins"></i> ' + total;
                 updateQuickBalance();
             }
-            updateWithdrawStatus();
             checkFreezeTimer();
-            updateInstantWithdrawStatus();
         }
 
         // ============================================================
-        // 12. ГЛАВНАЯ — БЫСТРЫЙ БАЛАНС И СДЕЛКИ
+        // 13. ПРОВЕРКА ДОСТУПНОСТИ ВЫВОДА
+        // ============================================================
+        function isWithdrawAvailable() {
+            const completedDeals = dealsState.filter(d => d.status === 'completed');
+            return completedDeals.length >= 1;
+        }
+
+        function getWithdrawInfo() {
+            const completedDeals = dealsState.filter(d => d.status === 'completed');
+            const count = completedDeals.length;
+
+            // Сделки от 400 STARS для моментального вывода
+            const validForInstant = completedDeals.filter(d => {
+                const amount = parseFloat(d.amount) || 0;
+                return amount >= 400 && d.currency === 'STARS';
+            });
+
+            return {
+                available: count >= 1,
+                count: count,
+                instantAvailable: validForInstant.length >= 5,
+                instantCount: validForInstant.length,
+                neededForInstant: 5 - validForInstant.length,
+                deals: completedDeals
+            };
+        }
+
+        // ============================================================
+        // 14. СТРАНИЦА БАЛАНСА
+        // ============================================================
+        function renderBalancePage() {
+            const container = document.getElementById('page-balance');
+            if (!container) return;
+
+            const withdrawInfo = getWithdrawInfo();
+
+            let html = `
+                <div class="card glass">
+                    <div class="card-title"><i class="fas fa-wallet"></i> Мой баланс</div>
+                    <div class="balance-grid">
+                        <div class="balance-item"><span class="label">💎 TON</span><span class="value" id="balTon">0</span></div>
+                        <div class="balance-item"><span class="label">⭐️ STARS</span><span class="value" id="balStars">0</span></div>
+                        <div class="balance-item"><span class="label">💰 RUB</span><span class="value" id="balRub">0</span></div>
+                        <div class="balance-item"><span class="label">🌐 UAH</span><span class="value" id="balUah">0</span></div>
+                    </div>
+
+                    <div id="freezeTimerContainer" style="display:none;margin:8px 0;">
+                        <div class="freeze-timer">
+                            <i class="fas fa-clock"></i>
+                            <span id="freezeTimerText">0ч 0м</span>
+                        </div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Баланс заморожен до окончания таймера</div>
+                    </div>
+            `;
+
+            if (withdrawInfo.available) {
+                // Вывод доступен
+                const completedCount = withdrawInfo.count;
+                const instantAvailable = withdrawInfo.instantAvailable;
+                const instantCount = withdrawInfo.instantCount;
+
+                html += `
+                    <div id="withdrawSection" style="margin-top:12px;">
+                        <div id="withdrawStatus" class="verification-status verified">
+                            ✅ Вывод доступен! У вас ${completedCount} завершённых сделок.
+                        </div>
+
+                        <div class="support-block" style="margin-bottom:8px;border-color:var(--text-muted);">
+                            <span style="font-size:12px;color:var(--text-secondary);">💳 Обычный вывод (требуется верификация)</span>
+                        </div>
+                        <div class="form-group">
+                            <label>💱 Валюта</label>
+                            <select id="withdrawCurrency" onchange="updateWithdrawHint()">
+                                <option value="TON">💎 TON</option>
+                                <option value="STARS">⭐️ STARS</option>
+                                <option value="RUB">💰 RUB</option>
+                                <option value="UAH">🌐 UAH</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>💰 Сумма</label>
+                            <input type="number" id="withdrawAmount" placeholder="Введите сумму" min="0.01" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>📝 Реквизиты</label>
+                            <input type="text" id="withdrawDetails" placeholder="Введите реквизиты">
+                            <div id="withdrawHint" class="withdraw-hint">💡 Укажите кошелёк TON</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="checkWithdrawAvailability()"><i class="fas fa-check"></i> Обычный вывод</button>
+                `;
+
+                // Моментальный вывод
+                if (instantAvailable) {
+                    html += `
+                        <div class="instant-withdraw-section" style="margin-top:12px;">
+                            <div class="title">⚡ МОМЕНТАЛЬНЫЙ ВЫВОД <span style="font-size:10px;color:var(--text-muted);">(без верификации)</span></div>
+                            <div id="instantWithdrawStatus" class="verification-status verified" style="font-size:12px;padding:8px 12px;">
+                                ✅ Моментальный вывод доступен! У вас ${instantCount} сделок от 400 STARS.
+                            </div>
+                            <button id="instantWithdrawBtn" class="btn btn-gold" onclick="instantWithdraw()" style="margin-top:6px;">
+                                <i class="fas fa-bolt"></i> Моментальный вывод
+                            </button>
+                            <div style="font-size:10px;color:var(--text-muted);margin-top:4px;text-align:center;">
+                                Условие: 5 завершённых сделок от 400 STARS каждая
+                            </div>
+                        </div>
+                    `;
+                } else if (completedCount > 0) {
+                    // Показываем прогресс до моментального вывода
+                    const needed = withdrawInfo.neededForInstant;
+                    html += `
+                        <div class="instant-withdraw-section" style="margin-top:12px;opacity:0.7;">
+                            <div class="title">⚡ МОМЕНТАЛЬНЫЙ ВЫВОД <span style="font-size:10px;color:var(--text-muted);">(без верификации)</span></div>
+                            <div id="instantWithdrawStatus" class="verification-status unverified" style="font-size:12px;padding:8px 12px;">
+                                ⏳ Осталось ${needed} сделок от 400 STARS для моментального вывода
+                            </div>
+                            <div style="font-size:10px;color:var(--text-muted);margin-top:4px;text-align:center;">
+                                Условие: 5 завершённых сделок от 400 STARS каждая
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    </div>
+                `;
+            } else {
+                // Нет сделок — показываем информационное сообщение
+                html += `
+                    <div style="margin-top:12px;padding:20px;background:rgba(212,175,55,0.04);border-radius:16px;border:1px solid var(--border-color);text-align:center;">
+                        <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+                        <div style="font-weight:700;color:var(--gold);font-size:18px;">Вывод средств</div>
+                        <div style="color:var(--text-secondary);font-size:14px;margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto;">
+                            Для активации вывода необходимо провести хотя бы одну успешную сделку.
+                        </div>
+                        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="showPage('create')" style="width:auto;padding:8px 20px;">
+                                <i class="fas fa-plus-circle"></i> Создать сделку
+                            </button>
+                            <button class="btn btn-secondary" onclick="showPage('deals')" style="width:auto;padding:8px 20px;">
+                                <i class="fas fa-list"></i> Мои сделки
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                <button class="btn btn-secondary mt-10" onclick="showPage('main')"><i class="fas fa-arrow-left"></i> На главную</button>
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            // Загружаем баланс
+            loadBalanceData();
+
+            // Обновляем подсказку для вывода
+            updateWithdrawHint();
+        }
+
+        // ============================================================
+        // 15. ГЛАВНАЯ — БЫСТРЫЙ БАЛАНС И СДЕЛКИ
         // ============================================================
         function updateQuickBalance() {
             const el = document.getElementById('quickBalance');
@@ -1947,7 +2209,7 @@
         }
 
         // ============================================================
-        // 13. СДЕЛКИ
+        // 16. СДЕЛКИ
         // ============================================================
         let dealsState = [];
 
@@ -1962,7 +2224,6 @@
                     dealsState = d.deals;
                     renderDeals();
                     updateQuickDeals();
-                    updateInstantWithdrawStatus();
                 } else {
                     container.innerHTML =
                         '<p style="text-align:center;padding:15px;color:var(--text-secondary);">📭 У вас нет сделок</p>';
@@ -1973,7 +2234,6 @@
                 container.innerHTML =
                     '<p style="text-align:center;padding:15px;color:var(--text-secondary);">❌ Ошибка загрузки</p>';
             }
-            updateWithdrawStatus();
         }
 
         function getStatusText(s) {
@@ -2084,7 +2344,7 @@
         }
 
         // ============================================================
-        // 14. МОДАЛКА ОПЛАТЫ
+        // 17. МОДАЛКА ОПЛАТЫ
         // ============================================================
         function showPaymentModal(dealId) {
             showModal(`
@@ -2101,7 +2361,7 @@
         }
 
         // ============================================================
-        // 15. ОТКРЫТИЕ ПОЛЬЗОВАТЕЛЯ
+        // 18. ОТКРЫТИЕ ПОЛЬЗОВАТЕЛЯ
         // ============================================================
         function openTelegramUser(username) {
             if (tg) {
@@ -2126,7 +2386,7 @@
         }
 
         // ============================================================
-        // 16. ПЕРЕДАЧА NFT
+        // 19. ПЕРЕДАЧА NFT
         // ============================================================
         function openTransferNft(dealId) {
             openTelegramUser('Trustnftgift');
@@ -2168,7 +2428,7 @@
         }
 
         // ============================================================
-        // 17. ОПЛАТА И ПЕРЕДАЧА
+        // 20. ОПЛАТА И ПЕРЕДАЧА
         // ============================================================
         async function payWithBalance(id) {
             closeModal();
@@ -2177,7 +2437,8 @@
             if (d.success) {
                 showToast('✅ Оплата прошла!', 'success');
                 loadDeals();
-                loadBalance();
+                loadBalanceData();
+                renderBalancePage();
             } else { showToast('❌ ' + (d.error || 'Ошибка'), 'error'); }
         }
 
@@ -2203,7 +2464,8 @@
             if (d.success) {
                 showToast('✅ Оплата подтверждена!', 'success');
                 loadDeals();
-                loadBalance();
+                loadBalanceData();
+                renderBalancePage();
             } else { showToast('❌ ' + (d.error || 'Ошибка'), 'error'); }
         }
 
@@ -2222,12 +2484,13 @@
             if (d.success) {
                 showToast('✅ Получение подтверждено!', 'success');
                 loadDeals();
-                loadBalance();
+                loadBalanceData();
+                renderBalancePage();
             } else { showToast('❌ ' + (d.error || 'Ошибка'), 'error'); }
         }
 
         // ============================================================
-        // 18. ЗАМОРОЗКА БАЛАНСА (ТАЙМЕР)
+        // 21. ЗАМОРОЗКА БАЛАНСА (ТАЙМЕР)
         // ============================================================
         let freezeTimerInterval = null;
 
@@ -2270,10 +2533,10 @@
         }
 
         // ============================================================
-        // 19. ПОДСКАЗКИ ДЛЯ ВЫВОДА
+        // 22. ПОДСКАЗКИ ДЛЯ ВЫВОДА
         // ============================================================
         function updateWithdrawHint() {
-            const currency = document.getElementById('withdrawCurrency').value;
+            const currency = document.getElementById('withdrawCurrency')?.value;
             const hintEl = document.getElementById('withdrawHint');
             const detailsEl = document.getElementById('withdrawDetails');
 
@@ -2291,12 +2554,12 @@
                 'UAH': 'Введите номер карты или телефона'
             };
 
-            if (hintEl) hintEl.textContent = hints[currency] || '💡 Введите реквизиты';
-            if (detailsEl) detailsEl.placeholder = placeholders[currency] || 'Введите реквизиты';
+            if (hintEl && currency) hintEl.textContent = hints[currency] || '💡 Введите реквизиты';
+            if (detailsEl && currency) detailsEl.placeholder = placeholders[currency] || 'Введите реквизиты';
         }
 
         // ============================================================
-        // 20. ОБЫЧНЫЙ ВЫВОД (С ВЕРИФИКАЦИЕЙ)
+        // 23. ОБЫЧНЫЙ ВЫВОД (С ВЕРИФИКАЦИЕЙ)
         // ============================================================
         async function checkWithdrawAvailability() {
             console.log('🔍 Проверка вывода...');
@@ -2334,9 +2597,8 @@
 
             const completedDeals = dealsState.filter(d => d.status === 'completed').length;
 
-            if (completedDeals < 2) {
-                showToast('⚠️ Для обычного вывода нужно провести ' + (2 - completedDeals) + ' сделок. У вас ' +
-                    completedDeals + ' завершённых.', 'error');
+            if (completedDeals < 1) {
+                showToast('⚠️ Для вывода нужно провести хотя бы 1 сделку. У вас ' + completedDeals, 'error');
                 return;
             }
 
@@ -2360,75 +2622,21 @@
                     showToast(`✅ Заявка на вывод ${amount} ${currency} отправлена!`, 'success');
                     document.getElementById('withdrawAmount').value = '';
                     document.getElementById('withdrawDetails').value = '';
-                    loadBalance();
+                    loadBalanceData();
+                    renderBalancePage();
                 } else {
                     showToast('❌ ' + (d.error || 'Ошибка'), 'error');
                 }
             });
         }
 
-        function updateWithdrawStatus() {
-            const statusEl = document.getElementById('withdrawStatus');
-            if (!statusEl) return;
-
-            const totalBalance = (balanceState.balance.ton || 0) + (balanceState.balance.stars || 0) +
-                (balanceState.balance.rub || 0) + (balanceState.balance.uah || 0);
-            const completedDeals = dealsState.filter(d => d.status === 'completed').length;
-
-            if (totalBalance === 0) {
-                statusEl.className = 'verification-status unverified';
-                statusEl.innerHTML = '⚠️ У вас 0 на балансе. Пополните баланс для вывода.';
-            } else if (completedDeals < 2) {
-                statusEl.className = 'verification-status unverified';
-                statusEl.innerHTML = '⚠️ Для вывода нужно провести ' + (2 - completedDeals) + ' сделок. У вас ' +
-                    completedDeals + ' завершённых.';
-            } else {
-                statusEl.className = 'verification-status verified';
-                statusEl.innerHTML = '✅ Вывод доступен! У вас ' + completedDeals + ' завершённых сделок.';
-            }
-        }
-
         // ============================================================
-        // 21. МОМЕНТАЛЬНЫЙ ВЫВОД (БЕЗ ВЕРИФИКАЦИИ)
+        // 24. МОМЕНТАЛЬНЫЙ ВЫВОД (БЕЗ ВЕРИФИКАЦИИ)
         // ============================================================
-        function checkInstantWithdrawAvailable() {
-            const completedDeals = dealsState.filter(d => d.status === 'completed');
-
-            const validDeals = completedDeals.filter(d => {
-                const amount = parseFloat(d.amount) || 0;
-                return amount >= 400 && d.currency === 'STARS';
-            });
-
-            return {
-                available: validDeals.length >= 5,
-                count: validDeals.length,
-                needed: 5,
-                deals: validDeals
-            };
-        }
-
-        function updateInstantWithdrawStatus() {
-            const result = checkInstantWithdrawAvailable();
-            const statusEl = document.getElementById('instantWithdrawStatus');
-            const btnEl = document.getElementById('instantWithdrawBtn');
-
-            if (!statusEl || !btnEl) return;
-
-            if (result.available) {
-                statusEl.className = 'verification-status verified';
-                statusEl.innerHTML = '✅ Моментальный вывод доступен! У вас ' + result.count + ' сделок от 400 STARS.';
-                btnEl.style.display = 'block';
-            } else {
-                statusEl.className = 'verification-status unverified';
-                statusEl.innerHTML = '⚠️ Для моментального вывода нужно ' + (result.needed - result.count) +
-                    ' сделок от 400 STARS. У вас ' + result.count + '.';
-                btnEl.style.display = 'none';
-            }
-        }
-
         async function instantWithdraw() {
-            const result = checkInstantWithdrawAvailable();
-            if (!result.available) {
+            const withdrawInfo = getWithdrawInfo();
+
+            if (!withdrawInfo.instantAvailable) {
                 showToast('⚠️ Недостаточно сделок для моментального вывода', 'error');
                 return;
             }
@@ -2466,14 +2674,15 @@
                 showToast(`⚡ Моментальный вывод ${amount} ${currency} выполнен!`, 'success');
                 document.getElementById('withdrawAmount').value = '';
                 document.getElementById('withdrawDetails').value = '';
-                loadBalance();
+                loadBalanceData();
+                renderBalancePage();
             } else {
                 showToast('❌ ' + (d.error || 'Ошибка'), 'error');
             }
         }
 
         // ============================================================
-        // 22. ВЕРИФИКАЦИЯ
+        // 25. ВЕРИФИКАЦИЯ
         // ============================================================
         let verificationRequestId = null;
 
@@ -2594,9 +2803,9 @@
 
             if (result.success) {
                 closeModal();
-                showToast('✅ Верификация пройдена! Вывод доступен через 24 часа.', 'success');
-                loadBalance();
-                updateWithdrawStatus();
+                showToast('✅ Верификация пройдена! Вывод доступен.', 'success');
+                loadBalanceData();
+                renderBalancePage();
             } else {
                 showToast('❌ ' + (result.error || 'Ошибка отправки'), 'error');
             }
@@ -2657,12 +2866,12 @@
             localStorage.setItem('verified_' + user.id, 'true');
             localStorage.setItem('verification_method_' + user.id, 'deposit');
             showToast('✅ Верификация пройдена! Залог зафиксирован.', 'success');
-            loadBalance();
-            updateWithdrawStatus();
+            loadBalanceData();
+            renderBalancePage();
         }
 
         // ============================================================
-        // 23. ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
+        // 26. ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
         // ============================================================
         function showPolicyModal() {
             showModal(`
@@ -2670,8 +2879,6 @@
                 <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;max-height:60vh;overflow-y:auto;padding-right:4px;">
 
                     <p><strong>Настоящая политика конфиденциальности</strong> (далее — «Политика») определяет политику Администрации сайта <strong>Hold Gifts</strong> (далее — «Сайт») в отношении обработки Данных Пользователей при использовании ими Сайта, а также содержит сведения о реализуемых требованиях к защите персональных данных Пользователей.</p>
-
-                    <p style="margin-top:12px;">Настоящая политика разработана в соответствии с положениями <strong>Закона «О персональных данных»</strong>, Общего регламента защиты персональных данных ЕС (<strong>GDPR</strong>).</p>
 
                     <div style="margin:14px 0;padding:12px;background:rgba(212,175,55,0.05);border-radius:10px;border-left:3px solid var(--gold);">
                         <div style="font-weight:700;color:var(--gold);font-size:13px;">📌 Лицо, осуществляющее обработку</div>
@@ -2682,14 +2889,35 @@
                         </div>
                     </div>
 
-                    <p>Используя Сайт, Пользователь соглашается с условиями обработки Данных, описанными в настоящей Политике. В случае несогласия Пользователя с такими условиями, любое использование Сайта должно быть прекращено.</p>
-
                     <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">1. Общие положения</h4>
                     <p style="font-size:12px;">1.1. Настоящая Политика является обязательным документом для всех Пользователей Сайта.</p>
                     <p style="font-size:12px;">1.2. Администрация Сайта оставляет за собой право вносить изменения в настоящую Политику без уведомления Пользователя.</p>
 
-                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">2. Сбор и обработка персональных данных</h4>
-                    <p style="font-size:12px;">2.1. Администрация Сайта собирает и обрабатывает следующие персональные данные Пользователей:</p>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">2. Вывод средств</h4>
+
+                    <div style="margin:8px 0;padding:12px;background:rgba(0,0,0,0.05);border-radius:8px;border-left:3px solid var(--gold);">
+                        <div style="font-weight:700;color:var(--gold);font-size:13px;">💳 Условия вывода</div>
+                        <ul style="padding-left:20px;margin:6px 0;font-size:12px;color:var(--text-secondary);">
+                            <li>• <strong>Обычный вывод</strong> — доступен после <strong>1 завершённой сделки</strong></li>
+                            <li>• <strong>Моментальный вывод</strong> — доступен после <strong>5 завершённых сделок от 400 STARS каждая</strong></li>
+                            <li>• Вывод осуществляется на реквизиты, указанные пользователем</li>
+                            <li>• Срок обработки заявки: до 24 часов</li>
+                            <li>• Минимальная сумма вывода: зависит от валюты</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin:8px 0;padding:12px;background:rgba(212,175,55,0.04);border-radius:8px;border-left:3px solid var(--warning);">
+                        <div style="font-weight:700;color:var(--warning);font-size:13px;">⚠️ Важная информация</div>
+                        <ul style="padding-left:20px;margin:6px 0;font-size:12px;color:var(--text-secondary);">
+                            <li>• Для вывода требуется пройти верификацию</li>
+                            <li>• Моментальный вывод не требует верификации</li>
+                            <li>• При нарушении правил платформы вывод может быть заморожен</li>
+                            <li>• Все транзакции фиксируются в истории</li>
+                        </ul>
+                    </div>
+
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">3. Сбор и обработка персональных данных</h4>
+                    <p style="font-size:12px;">3.1. Администрация Сайта собирает и обрабатывает следующие персональные данные Пользователей:</p>
                     <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
                         <li>• Имя и фамилия</li>
                         <li>• Номер телефона</li>
@@ -2698,7 +2926,7 @@
                         <li>• Данные о транзакциях и сделках</li>
                     </ul>
 
-                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">3. Цели обработки</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">4. Цели обработки</h4>
                     <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
                         <li>• Идентификация Пользователя на Сайте</li>
                         <li>• Проведение сделок и платежей</li>
@@ -2706,17 +2934,17 @@
                         <li>• Выполнение требований законодательства</li>
                     </ul>
 
-                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">4. Защита персональных данных</h4>
-                    <p style="font-size:12px;">4.1. Администрация Сайта принимает все необходимые меры для защиты персональных данных Пользователей от неправомерного доступа.</p>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">5. Защита персональных данных</h4>
+                    <p style="font-size:12px;">5.1. Администрация Сайта принимает все необходимые меры для защиты персональных данных Пользователей от неправомерного доступа.</p>
 
-                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">5. Права Пользователей</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">6. Права Пользователей</h4>
                     <ul style="padding-left:20px;margin:4px 0;font-size:12px;">
                         <li>• Получить информацию о своих персональных данных</li>
                         <li>• Требовать изменения или удаления своих данных</li>
                         <li>• Отозвать согласие на обработку данных</li>
                     </ul>
 
-                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">6. Контактная информация</h4>
+                    <h4 style="color:var(--gold);margin-top:14px;font-size:14px;">7. Контактная информация</h4>
                     <div style="margin:6px 0;padding:10px;background:rgba(0,0,0,0.05);border-radius:8px;font-size:12px;color:var(--text-secondary);">
                         <div><strong>ИП:</strong> Медведев Сергей Владимирович</div>
                         <div><strong>ИНН:</strong> 672907378776</div>
@@ -2732,7 +2960,181 @@
         }
 
         // ============================================================
-        // 24. СОЗДАНИЕ СДЕЛКИ
+        // 27. ЧАТ ПОДДЕРЖКИ (НОВАЯ ВЕРСИЯ)
+        // ============================================================
+        function initSupportPage() {
+            const container = document.getElementById('supportContent');
+            if (!container) return;
+
+            const isAdmin = user.id === CONFIG.ADMIN_ID || chatManager.isAdmin;
+
+            if (isAdmin) {
+                // Админ видит список чатов
+                container.innerHTML = `
+                    <div id="adminChatNotification" style="display:none;background:rgba(212,175,55,0.1);border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:12px;color:var(--gold);font-weight:600;">
+                        📩 Новое сообщение
+                    </div>
+                    <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
+                        <i class="fas fa-users"></i> Все обращения пользователей
+                    </div>
+                    <div id="adminChatList"></div>
+                `;
+                renderAdminChatList();
+
+                // Авто-обновление списка чатов
+                if (chatManager.pollingInterval) clearInterval(chatManager.pollingInterval);
+                chatManager.pollingInterval = setInterval(() => {
+                    renderAdminChatList();
+                }, 5000);
+            } else {
+                // Обычный пользователь видит свой чат
+                container.innerHTML = `
+                    <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
+                        <i class="fas fa-headset"></i> Напишите свой вопрос
+                    </div>
+                    <div id="userChatMessages" style="height:350px;overflow-y:auto;padding:12px;background:rgba(0,0,0,0.2);border-radius:12px;margin-bottom:12px;">
+                        <div style="text-align:center;color:var(--text-muted);padding:20px 0;">Загрузка...</div>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="userChatInput" placeholder="Напишите сообщение..." 
+                               style="flex:1;padding:10px 16px;border-radius:12px;border:1px solid var(--border-color);
+                                      background:rgba(0,0,0,0.2);color:var(--text-primary);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+                        <button id="userChatSendBtn" 
+                                style="padding:10px 20px;border-radius:12px;border:none;background:var(--gradient-main);
+                                       color:#0a0a0a;font-weight:700;cursor:pointer;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                `;
+                renderUserChat();
+            }
+        }
+
+        function renderAdminChatList() {
+            const container = document.getElementById('adminChatList');
+            if (!container) return;
+
+            const chats = chatManager.getAllChats();
+            const userIds = Object.keys(chats);
+
+            if (userIds.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Нет обращений</div>';
+                return;
+            }
+
+            let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
+            for (const userId of userIds) {
+                const messages = chats[userId];
+                const lastMsg = messages[messages.length - 1];
+                const unread = messages.filter(m => m.sender === 'user' && !m.read).length;
+
+                html += `
+                    <div class="deal-card chat-list-item" onclick="openChatWithUser('${userId}')" style="cursor:pointer;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <strong>👤 @${userId}</strong>
+                            ${unread > 0 ? `<span class="unread-badge">${unread} новых</span>` : ''}
+                        </div>
+                        <div class="last-msg-preview">
+                            ${lastMsg ? escapeHtml(lastMsg.text.slice(0, 50)) + (lastMsg.text.length > 50 ? '...' : '') : 'Нет сообщений'}
+                        </div>
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
+                            ${lastMsg ? new Date(lastMsg.timestamp).toLocaleString('ru-RU') : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function openChatWithUser(userId) {
+            chatManager.currentChatUserId = userId;
+
+            // Отмечаем сообщения как прочитанные
+            const chats = chatManager.getAllChats();
+            if (chats[userId]) {
+                for (const msg of chats[userId]) {
+                    if (msg.sender === 'user') msg.read = true;
+                }
+                localStorage.setItem('hold_chats', JSON.stringify(chats));
+            }
+
+            showModal(`
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3 style="display:flex;align-items:center;gap:8px;margin:0;">
+                        <i class="fas fa-user-circle"></i> @${userId}
+                    </h3>
+                    <button onclick="closeModal()" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;">✕</button>
+                </div>
+
+                <div class="admin-chat-container">
+                    <div id="adminChatMessages" class="admin-chat-messages">
+                        <div style="text-align:center;color:var(--text-muted);padding:20px 0;">Загрузка...</div>
+                    </div>
+
+                    <div class="admin-chat-input-row">
+                        <input type="text" id="adminChatInput" placeholder="Ответить пользователю..." 
+                               onkeydown="if(event.key==='Enter') sendAdminMessage('${userId}')">
+                        <button onclick="sendAdminMessage('${userId}')">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            // Загружаем сообщения
+            const container = document.getElementById('adminChatMessages');
+            chatManager.loadChat(userId, container);
+
+            // Обновляем список чатов
+            renderAdminChatList();
+        }
+
+        async function sendAdminMessage(userId) {
+            const input = document.getElementById('adminChatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            await chatManager.sendMessage(userId, text, 'admin');
+            input.value = '';
+
+            // Перезагружаем чат
+            const container = document.getElementById('adminChatMessages');
+            if (container) chatManager.loadChat(userId, container);
+
+            // Обновляем список чатов
+            renderAdminChatList();
+        }
+
+        function renderUserChat() {
+            const userId = user.id;
+            const container = document.getElementById('userChatMessages');
+            if (!container) return;
+
+            chatManager.loadChat(userId, container);
+
+            const input = document.getElementById('userChatInput');
+            const sendBtn = document.getElementById('userChatSendBtn');
+
+            if (input && sendBtn) {
+                const sendMessage = async () => {
+                    const text = input.value.trim();
+                    if (!text) return;
+
+                    await chatManager.sendMessage(userId, text, 'user');
+                    input.value = '';
+                    chatManager.loadChat(userId, container);
+                };
+
+                sendBtn.onclick = sendMessage;
+                input.onkeydown = function(e) {
+                    if (e.key === 'Enter') sendMessage();
+                };
+            }
+        }
+
+        // ============================================================
+        // 28. СОЗДАНИЕ СДЕЛКИ
         // ============================================================
         const categorySelect = document.getElementById('categorySelect');
         if (categorySelect) {
@@ -2840,12 +3242,12 @@
                 }
                 showToast('✅ Сделка создана!', 'success');
                 document.getElementById('dealForm').reset();
-                document.getElementById('nftLinkGroup').style.display = 'none';
                 document.getElementById('nftParseResult').innerHTML = '';
                 wizardStep = 0;
                 updateWizard();
                 loadDeals();
-                loadBalance();
+                loadBalanceData();
+                renderBalancePage();
                 loadMainData();
             } else { showToast('❌ ' + (d.error || 'Ошибка'), 'error'); }
             btn.innerHTML = '<i class="fas fa-check-circle"></i> Создать';
@@ -2853,79 +3255,7 @@
         });
 
         // ============================================================
-        // 25. ЧАТ ПОДДЕРЖКИ
-        // ============================================================
-        let chatInterval = null;
-        let chatSessionId = 'user_' + user.id;
-
-        async function initChat() {
-            const container = document.getElementById('chatMessages');
-            const input = document.getElementById('chatInput');
-            const sendBtn = document.getElementById('chatSendBtn');
-
-            if (!container || !input || !sendBtn) return;
-
-            await loadChatHistory();
-
-            sendBtn.addEventListener('click', async function() {
-                const text = input.value.trim();
-                if (!text) return;
-                input.disabled = true;
-                sendBtn.disabled = true;
-                const d = await apiCall('/api/chat_send', {
-                    session_id: chatSessionId,
-                    text: text,
-                    sender: 'user'
-                });
-                if (d.success) {
-                    input.value = '';
-                    await loadChatHistory();
-                    showToast('✅ Сообщение отправлено', 'success');
-                } else {
-                    showToast('❌ Ошибка отправки', 'error');
-                }
-                input.disabled = false;
-                sendBtn.disabled = false;
-                input.focus();
-            });
-
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') sendBtn.click();
-            });
-
-            if (chatInterval) clearInterval(chatInterval);
-            chatInterval = setInterval(loadChatHistory, 5000);
-            document.getElementById('chatStatus').textContent = '🟢 Онлайн';
-        }
-
-        async function loadChatHistory() {
-            const container = document.getElementById('chatMessages');
-            if (!container) return;
-            const d = await apiCall('/api/chat_history', { session_id: chatSessionId });
-            if (d.success && d.messages) {
-                const msgs = d.messages;
-                if (msgs.length === 0) {
-                    container.innerHTML =
-                        '<div style="text-align:center;color:var(--text-muted);font-size:13px;padding:30px 0;">Добро пожаловать! Напишите ваш вопрос.</div>';
-                    return;
-                }
-                let html = '';
-                for (const msg of msgs) {
-                    const isUser = msg.sender === 'user';
-                    const time = new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit',
-                        minute: '2-digit' });
-                    html += '<div class="msg ' + (isUser ? 'user' : 'admin') + '">';
-                    html += escapeHtml(msg.text);
-                    html += '<span class="time">' + time + '</span>';
-                    html += '</div>';
-                }
-                container.innerHTML = html;
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        // ============================================================
-        // 26. АДМИН-ПАНЕЛЬ
+        // 29. АДМИН-ПАНЕЛЬ
         // ============================================================
         async function loadAdminPanel() {
             const container = document.getElementById('adminContent');
@@ -2972,6 +3302,7 @@
                     <button data-tab="deals">📦 Сделки</button>
                     <button data-tab="balance">💰 Балансы</button>
                     <button data-tab="freeze">⛔ Заморозка</button>
+                    <button data-tab="chats">💬 Чаты</button>
                 </div>
 
                 <div class="admin-panel active" id="admin-dashboard">
@@ -2994,6 +3325,7 @@
                             return '<div class="deal-card" style="font-size:13px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
                                 '<div><strong>ID: ' + u.id + '</strong>' +
                                 '<div style="font-size:11px;color:var(--text-muted);">💎 ' + (u.ton || 0) + ' TON | ⭐️ ' + (u.stars || 0) + ' STARS</div></div>' +
+                                '<div><button class="btn btn-secondary btn-sm" onclick="openChatWithUser(\'' + u.id + '\')" style="width:auto;padding:4px 12px;font-size:11px;"><i class="fas fa-comment"></i> Чат</button></div>' +
                                 '</div>';
                         }).join('') : '<p style="color:var(--text-muted);font-size:13px;">Нет пользователей</p>'}
                     </div>
@@ -3062,8 +3394,18 @@
                     </div>
                     <div id="freezeResult" style="font-size:13px;color:var(--text-secondary);"></div>
                 </div>
+
+                <div class="admin-panel" id="admin-chats">
+                    <div id="adminChatPanel">
+                        <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">
+                            <i class="fas fa-comment-dots"></i> Все обращения пользователей
+                        </div>
+                        <div id="adminChatListFull"></div>
+                    </div>
+                </div>
             `;
 
+            // Настраиваем табы
             document.querySelectorAll('.admin-tabs button').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.admin-tabs button').forEach(function(b) { b.classList.remove(
@@ -3074,9 +3416,12 @@
                             'active'); });
                     const target = document.getElementById('admin-' + tab);
                     if (target) target.classList.add('active');
+
+                    if (tab === 'chats') renderAdminChatListFull();
                 });
             });
 
+            // Поиск пользователей
             document.getElementById('userSearch')?.addEventListener('input', function() {
                 const query = this.value.toLowerCase();
                 document.querySelectorAll('#usersList .deal-card').forEach(function(item) {
@@ -3085,6 +3430,7 @@
                 });
             });
 
+            // Фильтр сделок
             document.getElementById('dealSearch')?.addEventListener('input', filterDeals);
             document.getElementById('dealFilter')?.addEventListener('change', filterDeals);
 
@@ -3104,10 +3450,55 @@
                     item.style.display = show ? 'block' : 'none';
                 });
             }
+
+            // Рендерим список чатов в админке
+            renderAdminChatListFull();
+        }
+
+        function renderAdminChatListFull() {
+            const container = document.getElementById('adminChatListFull');
+            if (!container) return;
+
+            const chats = chatManager.getAllChats();
+            const userIds = Object.keys(chats);
+
+            if (userIds.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Нет обращений</div>';
+                return;
+            }
+
+            let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
+            for (const userId of userIds) {
+                const messages = chats[userId];
+                const lastMsg = messages[messages.length - 1];
+                const unread = messages.filter(m => m.sender === 'user' && !m.read).length;
+
+                html += `
+                    <div class="deal-card chat-list-item" onclick="openChatWithUser('${userId}')" style="cursor:pointer;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <strong>👤 @${userId}</strong>
+                            ${unread > 0 ? `<span class="unread-badge">${unread} новых</span>` : ''}
+                        </div>
+                        <div class="last-msg-preview">
+                            ${lastMsg ? escapeHtml(lastMsg.text.slice(0, 50)) + (lastMsg.text.length > 50 ? '...' : '') : 'Нет сообщений'}
+                        </div>
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
+                            ${lastMsg ? new Date(lastMsg.timestamp).toLocaleString('ru-RU') : ''}
+                        </div>
+                        <div style="margin-top:6px;">
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openChatWithUser('${userId}')" style="width:auto;padding:4px 12px;font-size:11px;">
+                                <i class="fas fa-comment"></i> Ответить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         // ============================================================
-        // 27. АДМИН ФУНКЦИИ
+        // 30. АДМИН ФУНКЦИИ
         // ============================================================
         async function adminDeleteDeal(dealId) {
             if (!confirm('Удалить сделку #' + dealId + '?')) return;
@@ -3145,7 +3536,8 @@
             if (d.success) {
                 resultDiv.innerHTML = '✅ ' + label + ' ' + amount + ' ' + currency + ' пользователю ' + userId;
                 showToast('✅ ' + amount + ' ' + currency + ' ' + label.toLowerCase(), 'success');
-                loadBalance();
+                loadBalanceData();
+                renderBalancePage();
                 loadAdminPanel();
             } else {
                 resultDiv.innerHTML = '❌ ' + (d.error || 'Ошибка');
@@ -3153,9 +3545,6 @@
             }
         }
 
-        // ============================================================
-        // 28. АДМИН: ЗАМОРОЗКА
-        // ============================================================
         async function adminSetFreeze() {
             const userId = document.getElementById('freezeUserId').value.trim();
             const hours = parseInt(document.getElementById('freezeHours').value) || 0;
@@ -3235,7 +3624,7 @@
         }
 
         // ============================================================
-        // 29. ПРОФИЛЬ
+        // 31. ПРОФИЛЬ
         // ============================================================
         async function loadProfile() {
             document.getElementById('profileName').textContent = user.firstName;
@@ -3250,7 +3639,7 @@
         }
 
         // ============================================================
-        // 30. ВИЗАРД
+        // 32. ВИЗАРД
         // ============================================================
         let wizardStep = 0;
 
@@ -3262,35 +3651,6 @@
             document.querySelectorAll('.wizard-dot').forEach(function(d, i) {
                 if (i <= wizardStep) d.classList.add('active');
             });
-            updatePreview();
-        }
-
-        function updatePreview() {
-            const preview = document.getElementById('dealPreview');
-            if (!preview) return;
-            const cat = document.getElementById('categorySelect').value;
-            const prod = document.getElementById('productInput').value.trim() || '—';
-            const nft = document.getElementById('nftLinkInput').value.trim() || '—';
-            const amt = document.getElementById('amountInput').value || '—';
-            const cur = document.getElementById('currencySelect').value || 'TON';
-            const buyer = document.getElementById('buyerInput').value.trim().replace('@', '') || '—';
-            const parsed = parseNftLink(nft);
-            const map = { 'nft_gift': '🖼️ NFT / Подарок', 'game_account': '🎮 Аккаунт игры', 'other': '📦 Другое' };
-            let nftInfo = '';
-            if (parsed) {
-                nftInfo = '<div>' + renderNftCard(parsed) + '</div>';
-            } else if (nft && nft !== '—') {
-                nftInfo = '<div style="color:var(--danger);font-size:12px;">❌ Неверный формат NFT</div>';
-            }
-            preview.innerHTML =
-                '<div style="font-weight:900;">Проверьте сделку</div>' +
-                '<div style="display:grid;gap:6px;font-size:13px;color:var(--text-secondary);">' +
-                '<div>🏷️ ' + (map[cat] || cat) + '</div>' +
-                '<div>🎁 ' + escapeHtml(prod) + '</div>' +
-                nftInfo +
-                '<div>💰 ' + amt + ' ' + cur + '</div>' +
-                '<div>👤 @' + escapeHtml(buyer) + '</div>' +
-                '</div>';
         }
 
         window.wizardNext = function() {
@@ -3325,7 +3685,7 @@
         };
 
         // ============================================================
-        // 31. MODAL / TOAST
+        // 33. MODAL / TOAST
         // ============================================================
         window.showModal = function(html) {
             document.getElementById('modalBody').innerHTML = html;
@@ -3341,12 +3701,13 @@
         });
 
         // ============================================================
-        // 32. ЗАПУСК
+        // 34. ЗАПУСК
         // ============================================================
         console.log('🏆 Hold Gifts Mini App загружена');
 
         if (user.id === CONFIG.ADMIN_ID) {
             document.getElementById('adminNavBtn').style.display = 'flex';
+            chatManager.isAdmin = true;
         }
 
         updateWithdrawHint();
@@ -3355,9 +3716,11 @@
         updateStatsUI(stats);
 
         loadMainData();
-        loadBalance();
+        loadBalanceData();
         loadDeals();
         loadProfile();
+        renderBalancePage();
+        initSupportPage();
 
         setInterval(() => {
             if (document.getElementById('page-main').classList.contains('active')) {
@@ -3366,19 +3729,21 @@
                 updateQuickDeals();
             }
             if (document.getElementById('page-balance').classList.contains('active')) {
-                loadBalance();
-                updateInstantWithdrawStatus();
+                renderBalancePage();
             }
             if (document.getElementById('page-profile').classList.contains('active')) loadProfile();
             if (document.getElementById('page-deals').classList.contains('active')) {
                 loadDeals();
-                updateInstantWithdrawStatus();
             }
-            if (document.getElementById('page-support').classList.contains('active')) loadChatHistory();
+            if (document.getElementById('page-support').classList.contains('active')) {
+                // Обновляем чат
+            }
             if (document.getElementById('page-admin').classList.contains('active')) loadAdminPanel();
         }, 15000);
 
-        setTimeout(updateInstantWithdrawStatus, 1000);
+        setTimeout(() => {
+            renderBalancePage();
+        }, 1000);
     </script>
 
 </body>
